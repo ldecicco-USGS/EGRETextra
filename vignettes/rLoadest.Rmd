@@ -89,6 +89,23 @@ loadestModel <- loadReg(Surv(ConcLow, ConcHigh, type="interval2")
 
 ```
 
+Where $ln{Q}$ and `DecTime`  are centered using the equations:
+$$ \ln{Q}=\ln(Q)-\mbox{center of } \ln(Q) $$
+$$ DecTime=DecYear-\mbox{center of } DecYear $$
+
+Here are other predefined models that can be used:
+
+$$ \ln(Load)= \alpha_0 + \alpha_1{\ln{Q}} + \epsilon $$
+$$ \ln(Load)= \alpha_0 + \alpha_1{\ln{Q}} + \alpha_2{\ln{Q^2}}+ \epsilon $$ 
+$$ \ln(Load)= \alpha_0 + \alpha_1{\ln{Q}} + \alpha_2{DecTime}+ \epsilon $$ 
+$$ \ln(Load)= \alpha_0 + \alpha_1{\ln{Q}} + \alpha_2{sin(2*\pi{DecTime})} + \alpha_3 cos(2*\pi{DecTime}) + \epsilon $$
+$$ \ln(Load)= \alpha_0+\alpha_1{\ln{Q}} + \alpha_2{\ln{Q^2}}+\alpha_3{DecTime}+\epsilon $$
+$$ \ln(Load)=\alpha_0 + \alpha_1{\ln{Q}}+\alpha_2{\ln{Q^2}}+\alpha_3 sin(2\pi{DecTime})+\alpha_4 cos(2\pi{DecTime})+\epsilon $$
+$$ \ln(Load)=\alpha_0+\alpha_1{\ln{Q}}+\alpha_2 \sin(2\pi{DecTime})+\alpha_3 \cos(2\pi{DecTime})+\alpha_4{DecTime}+\epsilon $$ 
+$$ \ln(Load)=\alpha_0+\alpha_1{\ln{Q}}+\alpha_2{\ln{Q^2}}+\alpha_3 \sin(2\pi{DecTime})+\alpha_4 \cos(2\pi{DecTime})+\alpha_5{DecTime}+\epsilon $$
+$$ \ln(Load)=\alpha_0+\alpha_1{\ln{Q}}+\alpha_2{\ln{Q^2}}+\alpha_3 \sin(2\pi{DecTime})+\alpha_4 \cos(2\pi{DecTime})+\alpha_5{DecTime}+\alpha_6{DecTime}^2+\epsilon $$   
+
+
 
 
 Finally, use the `predLoad` and `predConc` function to get the rloadest predictions for load and concentration. Use those values to populate the ConcDay and FluxDay. Use the `fitted` function with `type="mean"` to get unbiased estimate of the mean of the concentration (in EGRET, `yHat`). Use the `fitted` function with `type="response"` to get  estimated log concentration (in EGRET, `ConcHat`).

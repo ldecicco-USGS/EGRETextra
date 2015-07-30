@@ -1,0 +1,243 @@
+---
+title: "Using rLoadest with EGRET datasets"
+author: "Robert M. Hirsch, Laura A. De Cicco"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  rmarkdown::html_vignette:
+    fig_height: 3.5
+    fig_width: 7
+    toc: yes
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Flexible Flow-Normalization}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE, message=FALSE}
+library(rmarkdown)
+options(continue=" ")
+options(width=60)
+library(knitr)
+library(EGRET)
+library(rloadest)
+library(survival)
+
+```
+
+
+# Installing rLoadest
+
+rloadest can be installed with the following command:
+
+```{r eval=FALSE}
+install.packages(c("rloadest"), 
+  repos=c("http:/owi.usgs.gov/R","http://cran.us.r-project.org"))
+```
+
+rloadest has 6 detailed vignettes that walk through various examples for running LoadEst models. This vignette will walk through the Choptank River at Greensboro, MD example, running a WRTDS model, and then comparing that to the LoadEst model.
+
+
+# Using rloadest with EGRET data
+
+See the "Introduction to the EGRET Package" for complete instructions on gathering EGRET data, explanations of EGRET dataframes, information on the WRTDS modeling method, and descriptions of various graphical and tabular outputs.
+
+In this example, we will use the sample data provided in the EGRET package. Once you have your data in the standard Daily, Sample, and INFO dataframes, the instructions should be identical for WRTDS/rloadest comparisons.
+
+```{r echo=TRUE, eval=FALSE}
+
+library(EGRET)
+library(rloadest)
+library(survival)
+
+siteid <- "01491000"
+pcode <- "00631"
+startDate <- "1979-10-24"
+endDate <- "2011-09-29"
+
+Daily <- readNWISDaily(siteid,"00060",startDate,endDate)
+Sample <- readNWISSample(siteid,pcode,startDate,endDate)
+INFO <- readNWISInfo(siteid,pcode)
+eList <- mergeReport(INFO, Daily, Sample)
+eList <- modelEstimation(eList)
+multiPlotDataOverview(eList)
+```
+
+```{r echo=FALSE, fig.height=7}
+eList <- Choptank_eList
+INFO <- eList$INFO
+Sample <- eList$Sample
+Daily <- eList$Daily
+multiPlotDataOverview(eList)
+
+```
+
+
+Then, use the `loadReg` function to run the loadest regression:
+
+```{r echo=TRUE, eval=TRUE, warning=FALSE}
+
+loadestModel <- loadReg(Surv(ConcLow, ConcHigh, type="interval2")
+                        ~ model(9), 
+                   data = Sample, 
+                   flow = "Q", dates = "Date",
+                   flow.units="cms",
+                   conc.units="mg/l",
+                   station=INFO$station.nm)
+
+# To see a complete summary of the model results:
+# print(loadestModel, brief=FALSE, load.only=FALSE)
+
+```
+
+Where $ln{Q}$ and `DecTime`  are centered using the equations:
+$$ \ln{Q}=\ln(Q)-\mbox{center of } \ln(Q) $$
+$$ DecTime=DecYear-\mbox{center of } DecYear $$
+
+Here are other predefined models that can be used:
+
+$$ \ln(Load)= \alpha_0 + \alpha_1{\ln{Q}} + \epsilon $$
+$$ \ln(Load)= \alpha_0 + \alpha_1{\ln{Q}} + \alpha_2{\ln{Q^2}}+ \epsilon $$ 
+$$ \ln(Load)= \alpha_0 + \alpha_1{\ln{Q}} + \alpha_2{DecTime}+ \epsilon $$ 
+$$ \ln(Load)= \alpha_0 + \alpha_1{\ln{Q}} + \alpha_2{sin(2*\pi{DecTime})} + \alpha_3 cos(2*\pi{DecTime}) + \epsilon $$
+$$ \ln(Load)= \alpha_0+\alpha_1{\ln{Q}} + \alpha_2{\ln{Q^2}}+\alpha_3{DecTime}+\epsilon $$
+$$ \ln(Load)=\alpha_0 + \alpha_1{\ln{Q}}+\alpha_2{\ln{Q^2}}+\alpha_3 sin(2\pi{DecTime})+\alpha_4 cos(2\pi{DecTime})+\epsilon $$
+$$ \ln(Load)=\alpha_0+\alpha_1{\ln{Q}}+\alpha_2 \sin(2\pi{DecTime})+\alpha_3 \cos(2\pi{DecTime})+\alpha_4{DecTime}+\epsilon $$ 
+$$ \ln(Load)=\alpha_0+\alpha_1{\ln{Q}}+\alpha_2{\ln{Q^2}}+\alpha_3 \sin(2\pi{DecTime})+\alpha_4 \cos(2\pi{DecTime})+\alpha_5{DecTime}+\epsilon $$
+$$ \ln(Load)=\alpha_0+\alpha_1{\ln{Q}}+\alpha_2{\ln{Q^2}}+\alpha_3 \sin(2\pi{DecTime})+\alpha_4 \cos(2\pi{DecTime})+\alpha_5{DecTime}+\alpha_6{DecTime}^2+\epsilon $$   
+
+
+
+
+Finally, use the `predLoad` and `predConc` function to get the rloadest predictions for load and concentration. Use those values to populate the ConcDay and FluxDay. Use the `fitted` function with `type="mean"` to get unbiased estimate of the mean of the concentration (in EGRET, `yHat`). Use the `fitted` function with `type="response"` to get  estimated log concentration (in EGRET, `ConcHat`).
+
+
+```{r echo=TRUE, eval=TRUE, warning=FALSE}
+
+# Make DailyLoadest
+DailyLoadest <- Daily[,which(!(names(Daily) %in% 
+      c("ConcDay","FluxDay","FNConc","FNFlux","SE","yHat")))]
+
+concs <- predConc(loadestModel,DailyLoadest, by="day")
+flux <- predLoad(loadestModel,DailyLoadest, by="day")
+
+predictResp <- fitted(loadestModel$cfit, type='response')
+predictResp_mean <- fitted(loadestModel$cfit, type='mean')
+
+DailyLoadest$ConcDay <- concs$Conc
+DailyLoadest$FluxDay <- DailyLoadest$ConcDay*86.4*DailyLoadest$Q
+DailyLoadest$SE <- concs$Std.Err
+
+# Make SampleLoadest
+
+SampleLoadest <- Sample[,which(!(names(Sample) %in% 
+        c("yHat","SE","ConcHat")))]
+
+SampleLoadest$SE <- concs$Std.Err[
+  which(concs$Date %in% SampleLoadest$Date)]
+SampleLoadest$yHat <-predictResp
+SampleLoadest$ConcHat <- predictResp_mean
+
+eListLoadest <- as.egret(INFO, DailyLoadest, SampleLoadest)
+
+```
+
+
+# Using EGRET plots with rloadest results
+
+We can look at the `fluxBiasMulti` output with the DailyLoadest dataframe.
+
+```{r echo=TRUE, fig.height=7}
+fluxBiasMulti(eListLoadest, moreTitle="rloadEst")
+```
+
+
+
+The following plots are individual components of the \texttt{fluxBiasMulti} function. On the left are WRTDS outputs, and on the right are rloadest.
+
+```{r echo=TRUE}
+par(mfcol=c(1,2))
+plotResidPred(eList, printTitle = FALSE, tinyPlot = TRUE)
+title("WRTDS")
+plotResidPred(eListLoadest, printTitle = FALSE, tinyPlot = TRUE)
+title("rloadest")
+```
+
+
+```{r echo=TRUE}
+par(mfcol=c(1,2))
+plotResidQ(eList, printTitle = FALSE, tinyPlot = TRUE)
+title("WRTDS")
+plotResidQ(eListLoadest, printTitle = FALSE, tinyPlot = TRUE)
+title("rloadest")
+```
+
+
+```{r  echo=TRUE}
+par(mfcol=c(1,2))
+plotResidTime(eList, printTitle = FALSE, tinyPlot = TRUE)
+title("WRTDS")
+plotResidTime(eListLoadest, printTitle = FALSE, tinyPlot = TRUE)
+title("rloadest")
+```
+
+
+```{r echo=TRUE}
+par(mfcol=c(1,2))
+boxResidMonth(eList, printTitle = FALSE, tinyPlot = TRUE)
+title("WRTDS")
+boxResidMonth(eListLoadest, printTitle = FALSE, tinyPlot = TRUE)
+title("rloadest")
+```
+
+```{r  echo=TRUE}
+par(mfcol=c(1,2))
+boxConcThree(eList, printTitle = FALSE, tinyPlot = TRUE)
+title("WRTDS")
+boxConcThree(eListLoadest, printTitle = FALSE, tinyPlot = TRUE)
+title("rloadest")
+```
+
+```{r  echo=TRUE}
+par(mfcol=c(1,2))
+plotConcPred(eList, printTitle = FALSE, tinyPlot = TRUE)
+title("WRTDS")
+plotConcPred(eListLoadest, printTitle = FALSE, tinyPlot = TRUE)
+title("rloadest")
+```
+
+# rloadest Diagnostic Plots
+```{r echo=FALSE, eval=TRUE, dev='png', warning=FALSE, fig.height=7, fig.cap="The rating-curve regression model"}
+plot(loadestModel, which=1, set.up=FALSE)
+
+```
+
+```{r echo=FALSE, eval=TRUE, dev='png', warning=FALSE, fig.height=7, fig.cap="The residuals versus fit for the regression model"}
+
+plot(loadestModel, which=2, set.up=FALSE)
+```
+
+```{r echo=FALSE, eval=TRUE, dev='png', warning=FALSE, fig.height=7, fig.cap="The scale-location graph for the regression model"}
+
+plot(loadestModel, which=3, set.up=FALSE)
+```
+
+```{r echo=FALSE, eval=TRUE, dev='png', warning=FALSE, fig.height=7, fig.cap="The correlogram from the regression model"}
+
+plot(loadestModel, which=4, set.up=FALSE)
+```
+
+```{r echo=FALSE, eval=TRUE, dev='png', warning=FALSE, fig.height=7, fig.cap="The Q-normal plot of the residuals"}
+
+plot(loadestModel, which=5, set.up=FALSE)
+```
+
+```{r echo=FALSE, eval=TRUE, dev='png', warning=FALSE, fig.height=7, fig.cap="Box plot comparing estimated and observed values"}
+
+plot(loadestModel, which=6, set.up=FALSE)
+```
+
+
+# Disclaimer
+Software created by USGS employees along with contractors and grantees (unless specific stipulations are made in a contract or grant award) are to be released as Public Domain and free of copyright or license. Contributions of software components such as specific algorithms to existing software licensed through a third party are encouraged, but those contributions should be annotated as freely available in the Public Domain wherever possible. If USGS software uses existing licensed components, those licenses must be adhered to and redistributed.
+
+Although this software has been used by the U.S. Geological Survey (USGS), no warranty, expressed or implied, is made by the USGS or the U.S. Government as to accuracy and functionality, nor shall the fact of distribution constitute any such warranty, and no responsibility is assumed by the USGS in connection therewith.

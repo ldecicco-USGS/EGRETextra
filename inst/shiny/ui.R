@@ -1,10 +1,17 @@
-library(EGRET)
-
-eList <- Choptank_eList
-
 shinyUI(
   fluidPage(
     h2("EGRET Exploration"),
+    fluidRow(
+      column(3, h3("Period of Analysis:")),
+      column(4,
+             selectInput("paStart", label = "Starting Month", 
+                         choices = c(month.name),
+                         selected = "October", multiple = FALSE)),
+      column(4,
+             selectInput("paLong", label = "Number of Months", 
+                         choices = 1:12,
+                         selected = 12, multiple = FALSE))
+      ),
     fluidRow(
       column(11,
              tabsetPanel(

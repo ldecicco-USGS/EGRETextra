@@ -29,14 +29,25 @@ shinyServer(function(input, output) {
       if(extension == "rds"){
         eList_Start <- readRDS(input$data$datapath)
       } else {
+        #Remove old eList:
+        for ( obj in ls() ) { 
+          if(class(get(obj)) == "egret"){
+            rm(list=as.character(obj))
+          } 
+        }
+        #Load new:
         load(input$data$datapath)
-        assign("eList_Start", get(fileName))
+        #Assign to eList_Start
+        for ( obj in ls() ) { 
+          if(class(get(obj)) == "egret"){
+            assign("eList_Start", get(obj))
+            break
+          }
+        }
       }
-      
     }
     
     eList <- setPA(eList_Start, paStart, paLong)
-  
     
   })
   
@@ -58,7 +69,7 @@ shinyServer(function(input, output) {
     
     switch(input$flowPlots,
            "plotFlowSingle" = plotFlowSingle(eList, istat=stat, qUnit = qUnit),
-           "plotSDLogQ" = plotSDLogQ(eList, qUnit = qUnit),
+           "plotSDLogQ" = plotSDLogQ(eList),
            "plotQTimeDaily" = plotQTimeDaily(eList, qUnit = qUnit),
            "plotFour" = plotFour(eList, qUnit = qUnit),
            "plotFourStats" = plotFourStats(eList, qUnit = qUnit)
@@ -90,30 +101,35 @@ shinyServer(function(input, output) {
     
     eList <- eList()
     
-    
     if(is.null(input$qUnit)){
       qUnit = 1
     } else {
       qUnit = as.integer(input$qUnit)
     }
     
+    if(is.null(input$fluxUnit)){
+      fluxUnit = 3
+    } else {
+      fluxUnit = as.integer(input$fluxUnit)
+    }
+    
     switch(input$modelPlots,
            "plotConcTimeDaily" = plotConcTimeDaily(eList),
-           "plotFluxTimeDaily" = plotFluxTimeDaily(eList),
+           "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
            "plotConcPred" = plotConcPred(eList),
-           "plotFluxPred" = plotFluxPred(eList),
+           "plotFluxPred" = plotFluxPred(eList, fluxUnit=fluxUnit),
            "plotResidPred" = plotResidPred(eList),
-           "plotResidQ" = plotResidQ(eList),
+           "plotResidQ" = plotResidQ(eList, qUnit=qUnit),
            "plotResidTime" = plotResidTime(eList),
            "boxResidMonth" = boxResidMonth(eList),
            "boxConcThree" = boxConcThree(eList),
            "plotConcHist" = plotConcHist(eList),
-           "plotFluxHist" = plotFluxHist(eList),
+           "plotFluxHist" = plotFluxHist(eList, fluxUnit=fluxUnit),
            # "plotConcQSmooth" = plotConcQSmooth(eList),
            # "plotConcTimeSmooth" = plotConcTimeSmooth(eList),
-           "fluxBiasMulti" = fluxBiasMulti(eList)
-           # "plotContours" = plotContours(eList),
-           # "plotDiffContours" = plotDiffContours(eList)
+           "fluxBiasMulti" = fluxBiasMulti(eList, fluxUnit=fluxUnit, qUnit=qUnit)
+           # "plotContours" = plotContours(eList, qUnit=qUnit),
+           # "plotDiffContours" = plotDiffContours(eList, qUnit=qUnit)
            )
   })
   
@@ -141,6 +157,91 @@ shinyServer(function(input, output) {
     } else {
       HTML("")
     }
+  })
+  
+  output$flowCode <- renderPrint({
+    
+    if(is.null(input$flowStat)){
+      stat=5
+    } else {
+      stat = as.integer(input$flowStat)
+    }
+    
+    if(is.null(input$qUnit)){
+      qUnit = 1
+    } else {
+      qUnit = as.integer(input$qUnit)
+    }
+    
+    outText <- switch(input$flowPlots,
+           "plotFlowSingle" = paste0("plotFlowSingle(eList, istat=", stat,", qUnit = ", qUnit, ")"),
+           "plotSDLogQ" = paste0("plotSDLogQ(eList", ")"),
+           "plotQTimeDaily" = paste0("plotQTimeDaily(eList, qUnit = ", qUnit, ")"),
+           "plotFour" = paste0("plotFour(eList, qUnit = ", qUnit, ")"),
+           "plotFourStats" = paste0("plotFourStats(eList, qUnit = ", qUnit, ")")
+           
+    )
+    
+    HTML(paste0("<h4>",outText,"</h4>"))
+    
+  })
+  
+  output$dataCode <- renderPrint({
+
+    if(is.null(input$qUnit)){
+      qUnit = 1
+    } else {
+      qUnit = as.integer(input$qUnit)
+    }
+    
+    outText <- switch(input$dataPlots,
+           "boxConcMonth" = paste0("boxConcMonth(eList)"),
+           "boxQTwice" = paste0("boxQTwice(eList, qUnit = ", qUnit, ")"),
+           "plotConcTime" = paste0("plotConcTime(eList)"),
+           "plotConcQ" = paste0("plotConcQ(eList, qUnit = ", qUnit, ")"),
+           "multiPlotDataOverview" = paste0("multiPlotDataOverview(eList, qUnit = ", qUnit, ")")
+           
+    )
+    
+    HTML(paste0("<h4>",outText,"</h4>"))
+    
+  })
+  
+  output$modelCode <- renderPrint({
+    
+    if(is.null(input$qUnit)){
+      qUnit = 1
+    } else {
+      qUnit = as.integer(input$qUnit)
+    }
+    
+    if(is.null(input$fluxUnit)){
+      fluxUnit = 3
+    } else {
+      fluxUnit = as.integer(input$fluxUnit)
+    }
+    
+    outText <- switch(input$modelPlots,
+           "plotConcTimeDaily" = paste0("plotConcTimeDaily(eList)"),
+           "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
+           "plotConcPred" = paste0("plotConcPred(eList)"),
+           "plotFluxPred" = paste0("plotFluxPred(eList, fluxUnit = ", fluxUnit, ")"),
+           "plotResidPred" = paste0("plotResidPred(eList)"),
+           "plotResidQ" = paste0("plotResidQ(eList, qUnit = ", qUnit, ")"),
+           "plotResidTime" = paste0("plotResidTime(eList)"),
+           "boxResidMonth" = paste0("boxResidMonth(eList)"),
+           "boxConcThree" = paste0("boxConcThree(eList)"),
+           "plotConcHist" = paste0("plotConcHist(eList)"),
+           "plotFluxHist" = paste0("plotFluxHist(eList, fluxUnit = ", fluxUnit, ")"),
+           # "plotConcQSmooth" = plotConcQSmooth(eList),
+           # "plotConcTimeSmooth" = plotConcTimeSmooth(eList),
+           "fluxBiasMulti" = paste0("fluxBiasMulti(eList, qUnit = ", qUnit,", fluxUnit = ", fluxUnit, ")")
+           # "plotContours" = plotContours(eList, qUnit=qUnit),
+           # "plotDiffContours" = plotDiffContours(eList, qUnit=qUnit)
+    )
+    
+    HTML(paste0("<h4>",outText,"</h4>"))
+    
   })
   
 })

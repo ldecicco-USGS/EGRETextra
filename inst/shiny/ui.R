@@ -60,7 +60,9 @@ shinyUI(
                                  ),
                           column(8,
                                  plotOutput("flowPlotsOut"))
-                        )),
+                        ),
+                        h3("R Code:"),
+                        htmlOutput("flowCode")),
                tabPanel("Explore Data",
                         htmlOutput("SampleText"),
                         fluidRow(
@@ -72,7 +74,9 @@ shinyUI(
                         ),
                         column(8,
                                plotOutput("dataPlotsOut"))
-                      )),
+                      ),
+                      h3("R Code:"),
+                      htmlOutput("dataCode")),
                tabPanel("Explore Model",
                         fluidRow(
                           column(4,
@@ -86,7 +90,9 @@ shinyUI(
                         ),
                         column(8,
                                plotOutput("modelPlotsOut"))
-                    ))
+                    ),
+                    h3("R Code:"),
+                    htmlOutput("modelCode"))
              )),
       column(1)
     )

@@ -173,6 +173,18 @@ shinyServer(function(input, output) {
       qUnit = as.integer(input$qUnit)
     }
     
+    if(is.null(input$paStart)){
+      paStart <- 10
+    } else {
+      paStart = as.integer(which(month.name == input$paStart))
+    }
+    
+    if(is.null(input$paLong)){
+      paLong <- 12
+    } else {
+      paLong = as.integer(input$paLong)
+    }
+    
     outText <- switch(input$flowPlots,
            "plotFlowSingle" = paste0("plotFlowSingle(eList, istat=", stat,", qUnit = ", qUnit, ")"),
            "plotSDLogQ" = paste0("plotSDLogQ(eList", ")"),
@@ -182,7 +194,8 @@ shinyServer(function(input, output) {
            
     )
     
-    HTML(paste0("<h4>",outText,"</h4>"))
+    HTML(paste0("<h5>setPA(eList, paStart = ",paStart, ", paLong = ", paLong,")</h5>",
+                "<h5>",outText,"</h5>"))
     
   })
   
@@ -194,6 +207,18 @@ shinyServer(function(input, output) {
       qUnit = as.integer(input$qUnit)
     }
     
+    if(is.null(input$paStart)){
+      paStart <- 10
+    } else {
+      paStart = as.integer(which(month.name == input$paStart))
+    }
+    
+    if(is.null(input$paLong)){
+      paLong <- 12
+    } else {
+      paLong = as.integer(input$paLong)
+    }
+    
     outText <- switch(input$dataPlots,
            "boxConcMonth" = paste0("boxConcMonth(eList)"),
            "boxQTwice" = paste0("boxQTwice(eList, qUnit = ", qUnit, ")"),
@@ -203,7 +228,8 @@ shinyServer(function(input, output) {
            
     )
     
-    HTML(paste0("<h4>",outText,"</h4>"))
+    HTML(paste0("<h5>setPA(eList, paStart = ",paStart, ", paLong = ", paLong,")</h5>",
+                "<h5>",outText,"</h5>"))
     
   })
   
@@ -219,6 +245,18 @@ shinyServer(function(input, output) {
       fluxUnit = 3
     } else {
       fluxUnit = as.integer(input$fluxUnit)
+    }
+    
+    if(is.null(input$paStart)){
+      paStart <- 10
+    } else {
+      paStart = as.integer(which(month.name == input$paStart))
+    }
+    
+    if(is.null(input$paLong)){
+      paLong <- 12
+    } else {
+      paLong = as.integer(input$paLong)
     }
     
     outText <- switch(input$modelPlots,
@@ -240,7 +278,8 @@ shinyServer(function(input, output) {
            # "plotDiffContours" = plotDiffContours(eList, qUnit=qUnit)
     )
     
-    HTML(paste0("<h4>",outText,"</h4>"))
+    HTML(paste0("<h5>setPA(eList, paStart = ",paStart, ", paLong = ", paLong,")</h5>",
+                "<h5>",outText,"</h5>"))
     
   })
   

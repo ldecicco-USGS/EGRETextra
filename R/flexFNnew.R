@@ -6,8 +6,7 @@
 #' @param flowSegEnd integer vector of end years (water) for flow normalization
 #' 
 #' @export
-#' @importFrom EGRET as.egret
-#' @importFrom EGRET estDailyFromSurfaces
+#' @import EGRET
 #' @examples
 #' library(EGRET)
 #' eList <- Choptank_eList
@@ -68,8 +67,7 @@ flexFN <- function(eList, sampleSegStart, flowSegStart, flowSegEnd){
 #' @param eList named list with at least the Daily, Sample, and INFO dataframes
 #' @param segStart_i integer vector of start years (water) for each FN conc/flux segment
 #' @export
-#' @importFrom EGRET estDailyFromSurfaces
-#' @importFrom EGRET as.egret
+#' @import EGRET 
 #' @examples
 #' library(EGRET)
 #' eList <- Choptank_eList

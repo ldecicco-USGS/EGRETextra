@@ -119,6 +119,12 @@ shinyServer(function(input, output) {
       qUnit = as.integer(input$qUnit)
     }
     
+    if(is.null(input$logScaleModel)){
+      logScale = FALSE
+    } else {
+      logScale = as.logical(as.integer(input$logScaleModel))
+    }
+    
     if(is.null(input$fluxUnit)){
       fluxUnit = 3
     } else {
@@ -128,7 +134,7 @@ shinyServer(function(input, output) {
     switch(input$modelPlots,
            "plotConcTimeDaily" = plotConcTimeDaily(eList),
            "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
-           "plotConcPred" = plotConcPred(eList),
+           "plotConcPred" = plotConcPred(eList, logScale = logScale),
            "plotFluxPred" = plotFluxPred(eList, fluxUnit=fluxUnit),
            "plotResidPred" = plotResidPred(eList),
            "plotResidQ" = plotResidQ(eList, qUnit=qUnit),
@@ -184,6 +190,23 @@ shinyServer(function(input, output) {
       radioButtons("logScaleData", label = h3("Scale"),
                    choices = list("Linear" = 0, "Log" = 1), 
                    selected = 0)
+    }
+  })
+  
+  output$modelLog <- renderUI({
+    if(input$modelPlots %in% c("plotConcPred","plotConcQSmooth","plotConcTimeSmooth")){
+      radioButtons("logScaleModel", label = h3("Scale"),
+                   choices = list("Linear" = 0, "Log" = 1), 
+                   selected = 0)
+    }
+  })
+  
+  output$flowStatistic <- renderUI({
+    if(input$flowPlots == "plotFlowSingle"){
+      selectInput("flowStat", label = "Flow Statistic", 
+                  choices = list("1-day minimum"=1, "7-day minimum"=2, "30-day minimum"=3, "median"=4,
+                                 "mean"=5, "30-day maximum"=6, "7-day maximum"=7, "1-day maximum"=8),
+                  selected = 5, multiple = FALSE)
     }
   })
   

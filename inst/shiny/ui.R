@@ -55,7 +55,8 @@ shinyUI(
                               selectInput("flowStat", label = "Flow Statistic", 
                                           choices = list("1-day minimum"=1, "7-day minimum"=2, "30-day minimum"=3, "median"=4,
                                                          "mean"=5, "30-day maximum"=6, "7-day maximum"=7, "1-day maximum"=8),
-                                          selected = 5, multiple = FALSE)
+                                          selected = 5, multiple = FALSE),
+                              uiOutput("flowLog")
                                  
                                  ),
                           column(8,

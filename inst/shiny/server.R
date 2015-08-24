@@ -67,10 +67,16 @@ shinyServer(function(input, output) {
       qUnit = as.integer(input$qUnit)
     }
     
+    if(is.null(input$logScaleFlow)){
+      logScale = FALSE
+    } else {
+      logScale = as.logical(as.integer(input$logScaleFlow))
+    }
+    
     switch(input$flowPlots,
            "plotFlowSingle" = plotFlowSingle(eList, istat=stat, qUnit = qUnit),
            "plotSDLogQ" = plotSDLogQ(eList),
-           "plotQTimeDaily" = plotQTimeDaily(eList, qUnit = qUnit),
+           "plotQTimeDaily" = plotQTimeDaily(eList, qUnit = qUnit, logScale = logScale),
            "plotFour" = plotFour(eList, qUnit = qUnit),
            "plotFourStats" = plotFourStats(eList, qUnit = qUnit)
            
@@ -156,6 +162,14 @@ shinyServer(function(input, output) {
       HTML(paste0("<h4>","No water quality data", "</h4>"))
     } else {
       HTML("")
+    }
+  })
+  
+  output$flowLog <- renderUI({
+    if(input$flowPlots == "plotQTimeDaily"){
+      radioButtons("logScaleFlow", label = h3("Scale"),
+                   choices = list("Linear" = 0, "Log" = 1), 
+                   selected = 0)
     }
   })
   

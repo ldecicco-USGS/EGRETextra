@@ -9,7 +9,7 @@ output:
     toc: yes
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Flexible Flow-Normalization}
+  %\VignetteIndexEntry{rLoadest}
   \usepackage[utf8]{inputenc}
 ---
 

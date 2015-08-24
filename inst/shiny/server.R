@@ -310,21 +310,27 @@ shinyServer(function(input, output) {
   output$qLow <- renderUI({
     if(input$modelPlots %in% c("plotConcQSmooth","plotConcTimeSmooth","plotContours","plotDiffContours")){
       eList <- eList()
-      numericInput("qLow", label = h5("qLow"), value = round(quantile(eList$Daily$Q, probs = 0.1),digits = 1))
+      qFactor <- qConst[shortCode=as.integer(input$qUnit)][[1]]
+      qFactor <- qFactor@qUnitFactor
+      numericInput("qLow", label = h5("qLow"), value = qFactor * round(quantile(eList$Daily$Q, probs = 0.1),digits = 1))
     }
   })
   
   output$qHigh <- renderUI({
     if(input$modelPlots %in% c("plotConcQSmooth","plotConcTimeSmooth","plotContours","plotDiffContours")){
       eList <- eList()
-      numericInput("qHigh", label = h5("qHigh"), value = round(quantile(eList$Daily$Q, probs = 0.9),digits = 1))
+      qFactor <- qConst[shortCode=as.integer(input$qUnit)][[1]]
+      qFactor <- qFactor@qUnitFactor
+      numericInput("qHigh", label = h5("qHigh"), value = qFactor * round(quantile(eList$Daily$Q, probs = 0.9),digits = 1))
     }
   })
   
   output$qMid <- renderUI({
     if(input$modelPlots %in% c("plotConcQSmooth","plotConcTimeSmooth")){
       eList <- eList()
-      numericInput("qMid", label = h5("qMid"), value = round(quantile(eList$Daily$Q, probs = 0.5),digits = 1))
+      qFactor <- qConst[shortCode=as.integer(input$qUnit)][[1]]
+      qFactor <- qFactor@qUnitFactor
+      numericInput("qMid", label = h5("qMid"), value = qFactor * round(quantile(eList$Daily$Q, probs = 0.5),digits = 1))
     }
   })
   

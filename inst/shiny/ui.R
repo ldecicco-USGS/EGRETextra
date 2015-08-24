@@ -90,7 +90,11 @@ shinyUI(
                              uiOutput("date2"),
                              uiOutput("date3"),
                              uiOutput("qLow"),
-                             uiOutput("qHigh")
+                             uiOutput("qMid"),
+                             uiOutput("qHigh"),
+                             uiOutput("yearStart"),
+                             uiOutput("yearEnd"),
+                             uiOutput("centerDate")
                           
                         ),
                         column(8,

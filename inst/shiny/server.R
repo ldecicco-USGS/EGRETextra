@@ -143,6 +143,12 @@ shinyServer(function(input, output) {
       qHigh = input$qHigh
     }
     
+    if(is.null(input$qMid)){
+      qMid = round(quantile(eList$Daily$Q, probs = 0.5),digits = 1)
+    } else {
+      qMid = input$qMid
+    }
+    
     if(is.null(input$qUnit)){
       qUnit = 1
     } else {
@@ -161,6 +167,24 @@ shinyServer(function(input, output) {
       fluxUnit = as.integer(input$fluxUnit)
     }
     
+    if(is.null(input$centerDate)){
+      centerDate = "04-01"
+    } else {
+      centerDate = input$centerDate
+    }
+    
+    if(is.null(input$yearStart)){
+      yearStart = ceiling(min(eList$Daily$DecYear))
+    } else {
+      yearStart = as.integer(input$yearStart)
+    }
+    
+    if(is.null(input$yearEnd)){
+      yearEnd = floor(max(eList$Daily$DecYear))
+    } else {
+      yearEnd = as.integer(input$yearEnd)
+    }
+    
     switch(input$modelPlots,
            "plotConcTimeDaily" = plotConcTimeDaily(eList),
            "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
@@ -174,7 +198,8 @@ shinyServer(function(input, output) {
            "plotConcHist" = plotConcHist(eList),
            "plotFluxHist" = plotFluxHist(eList, fluxUnit=fluxUnit),
            "plotConcQSmooth" = plotConcQSmooth(eList, date1=date1,date2=date2, date3=date3,qLow=qLow,qHigh=qHigh),
-           # "plotConcTimeSmooth" = plotConcTimeSmooth(eList),
+           "plotConcTimeSmooth" = plotConcTimeSmooth(eList, q1=qLow, q2=qMid, q3=qHigh, logScale = logScale,
+                                                     centerDate=centerDate,yearStart=yearStart, yearEnd=yearEnd),
            "fluxBiasMulti" = fluxBiasMulti(eList, fluxUnit=fluxUnit, qUnit=qUnit)
            # "plotContours" = plotContours(eList, qUnit=qUnit),
            # "plotDiffContours" = plotDiffContours(eList, qUnit=qUnit)
@@ -231,11 +256,31 @@ shinyServer(function(input, output) {
     }
   })
   
+  output$yearStart <- renderUI({
+    if(input$modelPlots == "plotConcTimeSmooth"){
+      eList <- eList()
+      numericInput("yearStart", label = h5("yearStart"), value = ceiling(min(eList$Daily$DecYear)))
+    }
+  })
+  
+  output$yearEnd <- renderUI({
+    if(input$modelPlots == "plotConcTimeSmooth"){
+      eList <- eList()
+      numericInput("yearEnd", label = h5("yearEnd"), value = floor(max(eList$Daily$DecYear)))
+    }
+  })
+  
   output$date2 <- renderUI({
     if(input$modelPlots == "plotConcQSmooth"){
       eList <- eList()
       dateInput("date2", label = h5("date2"), 
                 value = as.Date(quantile(eList$Daily$Date, type=1, probs = 0.5), origin="1970-01-01"))
+    }
+  })
+  
+  output$centerDate <- renderUI({
+    if(input$modelPlots == "plotConcQSmooth"){
+      textInput("centerDate", label = h5("centerDate"), value = "04-01")
     }
   })
   
@@ -248,16 +293,23 @@ shinyServer(function(input, output) {
   })
   
   output$qLow <- renderUI({
-    if(input$modelPlots == "plotConcQSmooth"){
+    if(input$modelPlots %in% c("plotConcQSmooth","plotConcTimeSmooth")){
       eList <- eList()
       numericInput("qLow", label = h5("qLow"), value = round(quantile(eList$Daily$Q, probs = 0.1),digits = 1))
     }
   })
   
   output$qHigh <- renderUI({
-    if(input$modelPlots == "plotConcQSmooth"){
+    if(input$modelPlots %in% c("plotConcQSmooth","plotConcTimeSmooth")){
       eList <- eList()
       numericInput("qHigh", label = h5("qHigh"), value = round(quantile(eList$Daily$Q, probs = 0.9),digits = 1))
+    }
+  })
+  
+  output$qMid <- renderUI({
+    if(input$modelPlots %in% c("plotConcQSmooth","plotConcTimeSmooth")){
+      eList <- eList()
+      numericInput("qMid", label = h5("qMid"), value = round(quantile(eList$Daily$Q, probs = 0.5),digits = 1))
     }
   })
   
@@ -437,7 +489,7 @@ shinyServer(function(input, output) {
            "plotFluxHist" = paste0("plotFluxHist(eList, fluxUnit = ", fluxUnit, ")"),
            "plotConcQSmooth" = paste0("plotConcQSmooth(eList, date1 = '",date1, "', date2 = '",
                                       date2,"', date3 = '",date3, "', qLow = ",qLow,", qHigh = ",qHigh,")"),
-           # "plotConcTimeSmooth" = plotConcTimeSmooth(eList),
+           "plotConcTimeSmooth" = paste0("plotConcTimeSmooth(eList",")"),
            "fluxBiasMulti" = paste0("fluxBiasMulti(eList, qUnit = ", qUnit,", fluxUnit = ", fluxUnit, ")")
            # "plotContours" = plotContours(eList, qUnit=qUnit),
            # "plotDiffContours" = plotDiffContours(eList, qUnit=qUnit)

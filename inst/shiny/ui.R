@@ -1,6 +1,7 @@
 shinyUI(
   fluidPage(
     h2("EGRET Exploration"),
+    fluidRow(fileInput("data", "Load EGRET object")),
     fluidRow(
       column(3, h3("Period of Analysis:")),
       column(4,
@@ -12,6 +13,36 @@ shinyUI(
                          choices = 1:12,
                          selected = 12, multiple = FALSE))
       ),
+    fluidRow(
+      column(3, h3("Units")),
+      column(4,
+             selectInput("fluxUnit", label = "Flux Units", 
+                         choices = list("pounds/day" = 1,
+                                        "tons/day" = 2,
+                                        "kg/day" = 3,
+                                        "thousands of kg/day" = 4,
+                                        "tons/year" = 5,
+                                        "thousands of tons/year" = 6,
+                                        "millions of tons/year" = 7,
+                                        "thousands of kg/year" = 8,
+                                        "millions of kg/year" = 9,
+                                        "billions of kg/year" = 10,
+                                        "thousands of tons/day" = 11,
+                                        "millions of kg/day" = 12,
+                                        "kg/year" = 13),
+                         selected=3, multiple = FALSE)
+             
+             ),
+      column(4,
+             selectInput("qUnit", label = "Flow Units", 
+                         choices = list("Cubic Feet per Second" = 1,
+                                        "Cubic Meters per Second" = 2,
+                                        "Thousand Cubic Feet per Second" = 3,
+                                        "Thousand Cubic Meters per Second" = 4),
+                         selected=1, multiple = FALSE)
+             
+      )
+    ),
     fluidRow(
       column(11,
              tabsetPanel(
@@ -31,6 +62,7 @@ shinyUI(
                                  plotOutput("flowPlotsOut"))
                         )),
                tabPanel("Explore Data",
+                        htmlOutput("SampleText"),
                         fluidRow(
                           column(4,
                              selectInput("dataPlots", label = "Data", 
@@ -51,8 +83,10 @@ shinyUI(
                                              "fluxBiasMulti","plotContours","plotDiffContours"),
                                  selected = "fluxBiasMulti", multiple = FALSE)  
                           
-                        )
-                    ))               
+                        ),
+                        column(8,
+                               plotOutput("modelPlotsOut"))
+                    ))
              )),
       column(1)
     )

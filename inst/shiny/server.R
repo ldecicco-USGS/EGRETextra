@@ -113,6 +113,36 @@ shinyServer(function(input, output) {
     
     eList <- eList()
     
+    if(is.null(input$date1)){
+      date1 = as.Date(quantile(eList$Daily$Date, type=1, probs = 0.1), origin="1970-01-01")
+    } else {
+      date1 = input$date1
+    }
+    
+    if(is.null(input$date2)){
+      date2 = as.Date(quantile(eList$Daily$Date, type=1, probs = 0.5), origin="1970-01-01")
+    } else {
+      date2 = input$date2
+    }
+    
+    if(is.null(input$date3)){
+      date3 = as.Date(quantile(eList$Daily$Date, type=1, probs = 0.9), origin="1970-01-01")
+    } else {
+      date3 = input$date3
+    }
+    
+    if(is.null(input$qLow)){
+      qLow = round(quantile(eList$Daily$Q, probs = 0.1),digits = 1)
+    } else {
+      qLow = input$qLow
+    }
+    
+    if(is.null(input$qHigh)){
+      qHigh = round(quantile(eList$Daily$Q, probs = 0.9),digits = 1)
+    } else {
+      qHigh = input$qHigh
+    }
+    
     if(is.null(input$qUnit)){
       qUnit = 1
     } else {
@@ -143,7 +173,7 @@ shinyServer(function(input, output) {
            "boxConcThree" = boxConcThree(eList),
            "plotConcHist" = plotConcHist(eList),
            "plotFluxHist" = plotFluxHist(eList, fluxUnit=fluxUnit),
-           # "plotConcQSmooth" = plotConcQSmooth(eList),
+           "plotConcQSmooth" = plotConcQSmooth(eList, date1=date1,date2=date2, date3=date3,qLow=qLow,qHigh=qHigh),
            # "plotConcTimeSmooth" = plotConcTimeSmooth(eList),
            "fluxBiasMulti" = fluxBiasMulti(eList, fluxUnit=fluxUnit, qUnit=qUnit)
            # "plotContours" = plotContours(eList, qUnit=qUnit),
@@ -179,7 +209,7 @@ shinyServer(function(input, output) {
   
   output$flowLog <- renderUI({
     if(input$flowPlots == "plotQTimeDaily"){
-      radioButtons("logScaleFlow", label = h3("Scale"),
+      radioButtons("logScaleFlow", label = h4("Scale"),
                    choices = list("Linear" = 0, "Log" = 1), 
                    selected = 0)
     }
@@ -187,15 +217,53 @@ shinyServer(function(input, output) {
   
   output$dataLog <- renderUI({
     if(input$dataPlots %in% c("boxConcMonth", "plotConcTime", "plotConcQ")){
-      radioButtons("logScaleData", label = h3("Scale"),
+      radioButtons("logScaleData", label = h4("Scale"),
                    choices = list("Linear" = 0, "Log" = 1), 
                    selected = 0)
     }
   })
   
+  output$date1 <- renderUI({
+    if(input$modelPlots == "plotConcQSmooth"){
+      eList <- eList()
+      dateInput("date1", label = h5("date1"), 
+                value = as.Date(quantile(eList$Daily$Date, type=1, probs = 0.1), origin="1970-01-01"))
+    }
+  })
+  
+  output$date2 <- renderUI({
+    if(input$modelPlots == "plotConcQSmooth"){
+      eList <- eList()
+      dateInput("date2", label = h5("date2"), 
+                value = as.Date(quantile(eList$Daily$Date, type=1, probs = 0.5), origin="1970-01-01"))
+    }
+  })
+  
+  output$date3 <- renderUI({
+    if(input$modelPlots == "plotConcQSmooth"){
+      eList <- eList()
+      dateInput("date3", label = h5("date3"), 
+                value = as.Date(quantile(eList$Daily$Date, type=1, probs = 0.9), origin="1970-01-01"))
+    }
+  })
+  
+  output$qLow <- renderUI({
+    if(input$modelPlots == "plotConcQSmooth"){
+      eList <- eList()
+      numericInput("qLow", label = h5("qLow"), value = round(quantile(eList$Daily$Q, probs = 0.1),digits = 1))
+    }
+  })
+  
+  output$qHigh <- renderUI({
+    if(input$modelPlots == "plotConcQSmooth"){
+      eList <- eList()
+      numericInput("qHigh", label = h5("qHigh"), value = round(quantile(eList$Daily$Q, probs = 0.9),digits = 1))
+    }
+  })
+  
   output$modelLog <- renderUI({
     if(input$modelPlots %in% c("plotConcPred","plotConcQSmooth","plotConcTimeSmooth")){
-      radioButtons("logScaleModel", label = h3("Scale"),
+      radioButtons("logScaleModel", label = h4("Scale"),
                    choices = list("Linear" = 0, "Log" = 1), 
                    selected = 0)
     }

@@ -85,7 +85,12 @@ shinyUI(
                                              "plotConcHist","plotFluxHist","plotConcQSmooth","plotConcTimeSmooth",
                                              "fluxBiasMulti","plotContours","plotDiffContours"),
                                  selected = "fluxBiasMulti", multiple = FALSE),
-                             uiOutput("modelLog")
+                             uiOutput("modelLog"),
+                             uiOutput("date1"),
+                             uiOutput("date2"),
+                             uiOutput("date3"),
+                             uiOutput("qLow"),
+                             uiOutput("qHigh")
                           
                         ),
                         column(8,

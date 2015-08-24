@@ -185,6 +185,12 @@ shinyServer(function(input, output) {
       yearEnd = as.integer(input$yearEnd)
     }
     
+    if(is.null(input$maxDiff)){
+      maxDiff = diff(range(eList$Sample$ConcAve))
+    } else {
+      maxDiff = as.integer(input$maxDiff)
+    }
+    
     switch(input$modelPlots,
            "plotConcTimeDaily" = plotConcTimeDaily(eList),
            "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
@@ -203,7 +209,7 @@ shinyServer(function(input, output) {
            "fluxBiasMulti" = fluxBiasMulti(eList, fluxUnit=fluxUnit, qUnit=qUnit),
            "plotContours" = plotContours(eList, qUnit=qUnit,yearStart = yearStart, yearEnd = yearEnd,
                                          qBottom = qLow, qTop=qHigh),
-           "plotDiffContours" = plotDiffContours(eList, year0=yearStart,year1 = yearEnd, maxDiff = qHigh-qLow,
+           "plotDiffContours" = plotDiffContours(eList, year0=yearStart,year1 = yearEnd, maxDiff = maxDiff,
                                                  qUnit=qUnit,qBottom = qLow, qTop=qHigh)
            )
   })
@@ -262,6 +268,13 @@ shinyServer(function(input, output) {
     if(input$modelPlots %in% c("plotConcTimeSmooth","plotContours","plotDiffContours")){
       eList <- eList()
       numericInput("yearStart", label = h5("yearStart"), value = ceiling(min(eList$Daily$DecYear)))
+    }
+  })
+  
+  output$maxDiff <- renderUI({
+    if(input$modelPlots %in% c("plotDiffContours")){
+      eList <- eList()
+      numericInput("maxDiff", label = h5("maxDiff"), value = diff(range(eList$Sample$ConcAve)))
     }
   })
   
@@ -501,6 +514,12 @@ shinyServer(function(input, output) {
       yearEnd = as.integer(input$yearEnd)
     }
     
+    if(is.null(input$maxDiff)){
+      maxDiff = diff(range(eList$Sample$ConcAve))
+    } else {
+      maxDiff = as.integer(input$maxDiff)
+    }
+    
     outText <- switch(input$modelPlots,
            "plotConcTimeDaily" = paste0("plotConcTimeDaily(eList)"),
            "plotFluxTimeDaily" = paste0("plotFluxTimeDaily(eList, fluxUnit = ", fluxUnit),
@@ -520,8 +539,9 @@ shinyServer(function(input, output) {
                                          yearStart,", yearEnd = ",yearEnd,", centerDate = ",centerDate,")"),
            "fluxBiasMulti" = paste0("fluxBiasMulti(eList, qUnit = ", qUnit,", fluxUnit = ", fluxUnit, ")"),
            "plotContours" = paste0("plotContours(eList, qUnit=", qUnit,", yearStart = ",yearStart,
-                                   ", yearEnd = ",yearEnd,", qBottom = ",qLow,", qTop = ",qHigh,")")
-           # "plotDiffContours" = plotDiffContours(eList, qUnit=qUnit)
+                                   ", yearEnd = ",yearEnd,", qBottom = ",qLow,", qTop = ",qHigh,")"),
+           "plotDiffContours" = paste0("plotDiffContours(eList, qUnit=",qUnit,", year0=",yearStart,",year1 = ",
+                                       yearEnd,", qBottom = ",qLow,", qTop = ",qHigh, ", maxDiff = ",maxDiff,")")
     )
     
     HTML(paste0("<h5>setPA(eList, paStart = ",paStart, ", paLong = ", paLong,")</h5>",

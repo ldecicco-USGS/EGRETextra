@@ -94,7 +94,8 @@ shinyUI(
                              uiOutput("qHigh"),
                              uiOutput("yearStart"),
                              uiOutput("yearEnd"),
-                             uiOutput("centerDate")
+                             uiOutput("centerDate"),
+                             uiOutput("maxDiff")
                           
                         ),
                         column(8,

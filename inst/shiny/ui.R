@@ -53,14 +53,12 @@ shinyUI(
                                  choices = c("plotFlowSingle","plotSDLogQ","plotQTimeDaily","plotFour","plotFourStats"),
                                  selected = "plotFlowSingle", multiple = FALSE),
                               uiOutput("flowStatistic"),
-                              uiOutput("flowLog")
-                                 
-                                 ),
+                              uiOutput("flowLog"),
+                              h4("R Code:"),
+                              htmlOutput("flowCode")),
                           column(8,
                                  plotOutput("flowPlotsOut"))
-                        ),
-                        h4("R Code:"),
-                        htmlOutput("flowCode")),
+                        )),
                tabPanel("Explore Data",
                         htmlOutput("SampleText"),
                         fluidRow(
@@ -68,14 +66,12 @@ shinyUI(
                              selectInput("dataPlots", label = "Data", 
                                  choices = c("boxConcMonth","boxQTwice","plotConcTime","plotConcQ","multiPlotDataOverview"),
                                  selected = "multiPlotDataOverview", multiple = FALSE) ,
-                             uiOutput("dataLog")
-                          
-                        ),
+                             uiOutput("dataLog"),
+                             h4("R Code:"),
+                             htmlOutput("dataCode")),
                         column(8,
                                plotOutput("dataPlotsOut"))
-                      ),
-                      h4("R Code:"),
-                      htmlOutput("dataCode")),
+                      )),
                tabPanel("Explore Model",
                         fluidRow(
                           column(4,
@@ -95,14 +91,13 @@ shinyUI(
                              uiOutput("yearStart"),
                              uiOutput("yearEnd"),
                              uiOutput("centerDate"),
-                             uiOutput("maxDiff")
-                          
-                        ),
+                             uiOutput("maxDiff"),
+                             h4("R Code:"),
+                             htmlOutput("modelCode")),
                         column(8,
                                plotOutput("modelPlotsOut"))
-                    ),
-                    h4("R Code:"),
-                    htmlOutput("modelCode"))
+                    
+                    ))
              )),
       column(1)
     )

@@ -23,12 +23,6 @@ flexFN <- function(eList, sampleSegStart, flowSegStart, flowSegEnd){
   Daily <- eList$Daily
   Sample <- eList$Sample
   
-  calcWY <- function(df){
-    df$WaterYear <- as.integer(df$DecYear)
-    df$WaterYear[df$Month >= 10] <- df$WaterYear[df$Month >= 10] +1
-    return(df)
-  }
-  
   Sample <- calcWY(Sample)
   Daily <- calcWY(Daily)
   
@@ -65,7 +59,7 @@ flexFN <- function(eList, sampleSegStart, flowSegStart, flowSegEnd){
 #' Segment estimates
 #' 
 #' @param eList named list with at least the Daily, Sample, and INFO dataframes
-#' @param segStart_i integer vector of start years (water) for each FN conc/flux segment
+#' @param dateInfo dataframe with sampleSegStart, flowSegStart, flowSegEnd, sampleSegEnd
 #' @export
 #' @import EGRET 
 #' @examples
@@ -75,6 +69,11 @@ flexFN <- function(eList, sampleSegStart, flowSegStart, flowSegEnd){
 #' sampleSegStart <- c(1980,1990,2000)
 #' flowSegStart <- c(1980,1985,1992)
 #' flowSegEnd <- c(1994,2004,2011)
+#' dateInfo <- dateInfo <- data.frame(sampleSegStart, flowSegStart, flowSegEnd)
+#' dateInfo$sampleSegEnd <- c(dateInfo$sampleSegStart[2:nrow(dateInfo)]-1,floor(max(eList$Sample$DecYear)))
+#' Daily <- calcWY(eList$Daily)
+#' Sample <- calcWY(eList$Sample)
+#' eList <- as.egret(eList$INFO,Daily,Sample,eList$surfaces)
 #' eList <- estFNsegs(eList,dateInfo[1,])
 estFNsegs <- function(eList, dateInfo){
   
@@ -88,4 +87,19 @@ estFNsegs <- function(eList, dateInfo){
   
   newDaily <- EGRET::estDailyFromSurfaces(newList)
   return(newDaily)
+}
+
+#' Calculate Water Year
+#' 
+#' @param df data frame with DecYear and Month columns
+#' @export 
+#' @examples
+#' library(EGRET)
+#' eList <- Choptank_eList
+#' Daily <- eList$Daily
+#' Daily <- calcWY(Daily)
+calcWY <- function(df){
+  df$WaterYear <- as.integer(df$DecYear)
+  df$WaterYear[df$Month >= 10] <- df$WaterYear[df$Month >= 10] +1
+  return(df)
 }

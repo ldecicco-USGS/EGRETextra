@@ -70,7 +70,8 @@ shinyUI(
                           column(4,
                              selectInput("dataPlots", label = "Data", 
                                  choices = c("boxConcMonth","boxQTwice","plotConcTime","plotConcQ","multiPlotDataOverview"),
-                                 selected = "multiPlotDataOverview", multiple = FALSE) 
+                                 selected = "multiPlotDataOverview", multiple = FALSE) ,
+                             uiOutput("dataLog")
                           
                         ),
                         column(8,

@@ -93,11 +93,17 @@ shinyServer(function(input, output) {
       qUnit = as.integer(input$qUnit)
     }
     
+    if(is.null(input$logScaleData)){
+      logScale = FALSE
+    } else {
+      logScale = as.logical(as.integer(input$logScaleData))
+    }
+    
     switch(input$dataPlots,
-           "boxConcMonth" = boxConcMonth(eList),
+           "boxConcMonth" = boxConcMonth(eList, logScale = logScale),
            "boxQTwice" = boxQTwice(eList, qUnit = qUnit),
-           "plotConcTime" = plotConcTime(eList),
-           "plotConcQ" = plotConcQ(eList, qUnit = qUnit),
+           "plotConcTime" = plotConcTime(eList, logScale = logScale),
+           "plotConcQ" = plotConcQ(eList, qUnit = qUnit, logScale = logScale),
            "multiPlotDataOverview" = multiPlotDataOverview(eList, qUnit = qUnit)
            
     )
@@ -173,6 +179,14 @@ shinyServer(function(input, output) {
     }
   })
   
+  output$dataLog <- renderUI({
+    if(input$dataPlots %in% c("boxConcMonth", "plotConcTime", "plotConcQ")){
+      radioButtons("logScaleData", label = h3("Scale"),
+                   choices = list("Linear" = 0, "Log" = 1), 
+                   selected = 0)
+    }
+  })
+  
   output$flowCode <- renderPrint({
     
     if(is.null(input$flowStat)){
@@ -199,10 +213,17 @@ shinyServer(function(input, output) {
       paLong = as.integer(input$paLong)
     }
     
+    
+    if(is.null(input$logScaleFlow)){
+      logScale = FALSE
+    } else {
+      logScale = as.logical(as.integer(input$logScaleFlow))
+    }
+    
     outText <- switch(input$flowPlots,
            "plotFlowSingle" = paste0("plotFlowSingle(eList, istat=", stat,", qUnit = ", qUnit, ")"),
            "plotSDLogQ" = paste0("plotSDLogQ(eList", ")"),
-           "plotQTimeDaily" = paste0("plotQTimeDaily(eList, qUnit = ", qUnit, ")"),
+           "plotQTimeDaily" = paste0("plotQTimeDaily(eList, logScale = ",logScale,", qUnit = ", qUnit, ")"),
            "plotFour" = paste0("plotFour(eList, qUnit = ", qUnit, ")"),
            "plotFourStats" = paste0("plotFourStats(eList, qUnit = ", qUnit, ")")
            
@@ -233,11 +254,17 @@ shinyServer(function(input, output) {
       paLong = as.integer(input$paLong)
     }
     
+    if(is.null(input$logScaleData)){
+      logScale = FALSE
+    } else {
+      logScale = as.logical(as.integer(input$logScaleData))
+    }
+    
     outText <- switch(input$dataPlots,
-           "boxConcMonth" = paste0("boxConcMonth(eList)"),
+           "boxConcMonth" = paste0("boxConcMonth(eList, logScale = ", logScale,")"),
            "boxQTwice" = paste0("boxQTwice(eList, qUnit = ", qUnit, ")"),
-           "plotConcTime" = paste0("plotConcTime(eList)"),
-           "plotConcQ" = paste0("plotConcQ(eList, qUnit = ", qUnit, ")"),
+           "plotConcTime" = paste0("plotConcTime(eList, logScale = ", logScale,")"),
+           "plotConcQ" = paste0("plotConcQ(eList, logScale = ", logScale,", qUnit = ", qUnit, ")"),
            "multiPlotDataOverview" = paste0("multiPlotDataOverview(eList, qUnit = ", qUnit, ")")
            
     )

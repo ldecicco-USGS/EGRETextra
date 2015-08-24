@@ -52,12 +52,10 @@ shinyUI(
                               selectInput("flowPlots", label = "Flow History", 
                                  choices = c("plotFlowSingle","plotSDLogQ","plotQTimeDaily","plotFour","plotFourStats"),
                                  selected = "plotFlowSingle", multiple = FALSE),
-                              selectInput("flowStat", label = "Flow Statistic", 
-                                          choices = list("1-day minimum"=1, "7-day minimum"=2, "30-day minimum"=3, "median"=4,
-                                                         "mean"=5, "30-day maximum"=6, "7-day maximum"=7, "1-day maximum"=8),
-                                          selected = 5, multiple = FALSE)
-                                 
-                                 ),
+                              uiOutput("flowStatistic"),
+                              uiOutput("flowLog"),
+                              h4("R Code:"),
+                              htmlOutput("flowCode")),
                           column(8,
                                  plotOutput("flowPlotsOut"))
                         )),
@@ -67,9 +65,10 @@ shinyUI(
                           column(4,
                              selectInput("dataPlots", label = "Data", 
                                  choices = c("boxConcMonth","boxQTwice","plotConcTime","plotConcQ","multiPlotDataOverview"),
-                                 selected = "multiPlotDataOverview", multiple = FALSE) 
-                          
-                        ),
+                                 selected = "multiPlotDataOverview", multiple = FALSE) ,
+                             uiOutput("dataLog"),
+                             h4("R Code:"),
+                             htmlOutput("dataCode")),
                         column(8,
                                plotOutput("dataPlotsOut"))
                       )),
@@ -81,11 +80,23 @@ shinyUI(
                                              "plotResidQ","plotResidTime","boxResidMonth","boxConcThree",
                                              "plotConcHist","plotFluxHist","plotConcQSmooth","plotConcTimeSmooth",
                                              "fluxBiasMulti","plotContours","plotDiffContours"),
-                                 selected = "fluxBiasMulti", multiple = FALSE)  
-                          
-                        ),
+                                 selected = "fluxBiasMulti", multiple = FALSE),
+                             uiOutput("modelLog"),
+                             uiOutput("date1"),
+                             uiOutput("date2"),
+                             uiOutput("date3"),
+                             uiOutput("qLow"),
+                             uiOutput("qMid"),
+                             uiOutput("qHigh"),
+                             uiOutput("yearStart"),
+                             uiOutput("yearEnd"),
+                             uiOutput("centerDate"),
+                             uiOutput("maxDiff"),
+                             h4("R Code:"),
+                             htmlOutput("modelCode")),
                         column(8,
                                plotOutput("modelPlotsOut"))
+                    
                     ))
              )),
       column(1)

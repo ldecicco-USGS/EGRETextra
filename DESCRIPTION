@@ -11,15 +11,15 @@ License: CC0
 Depends:
     R (>= 3.0)
 Imports:
-    EGRET (>= 2.1.1)
+    EGRET (>= 2.1.1),
+    shiny
 Suggests:
     knitr,
     rmarkdown,
     rloadest,
     rkt,
     survival,
-    lubridate,
-    shiny
+    lubridate
 LazyLoad: yes
 LazyData: yes
 VignetteBuilder: knitr

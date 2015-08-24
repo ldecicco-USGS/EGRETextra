@@ -9,7 +9,7 @@ estFNsegs(eList, dateInfo)
 \arguments{
 \item{eList}{named list with at least the Daily, Sample, and INFO dataframes}
 
-\item{segStart_i}{integer vector of start years (water) for each FN conc/flux segment}
+\item{dateInfo}{dataframe with sampleSegStart, flowSegStart, flowSegEnd, sampleSegEnd}
 }
 \description{
 Segment estimates
@@ -21,6 +21,11 @@ eList <- setUpEstimation(eList)
 sampleSegStart <- c(1980,1990,2000)
 flowSegStart <- c(1980,1985,1992)
 flowSegEnd <- c(1994,2004,2011)
+dateInfo <- dateInfo <- data.frame(sampleSegStart, flowSegStart, flowSegEnd)
+dateInfo$sampleSegEnd <- c(dateInfo$sampleSegStart[2:nrow(dateInfo)]-1,floor(max(eList$Sample$DecYear)))
+Daily <- calcWY(eList$Daily)
+Sample <- calcWY(eList$Sample)
+eList <- as.egret(eList$INFO,Daily,Sample,eList$surfaces)
 eList <- estFNsegs(eList,dateInfo[1,])
 }
 

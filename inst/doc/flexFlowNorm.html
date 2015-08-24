@@ -53,200 +53,61 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <div id="header">
 <h1 class="title">Flexible Flow-Normalization</h1>
 <h4 class="author"><em>Robert M. Hirsch, Laura A. De Cicco</em></h4>
-<h4 class="date"><em>04 August, 2015</em></h4>
+<h4 class="date"><em>24 August, 2015</em></h4>
 </div>
 
 <div id="TOC">
 <ul>
-<li><a href="#required-functions">Required Functions:</a></li>
 <li><a href="#sample-workflow">Sample workflow:</a></li>
 <li><a href="#sample-output">Sample Output:</a></li>
 <li><a href="#disclaimer">Disclaimer</a></li>
 </ul>
 </div>
 
-<div id="required-functions" class="section level1">
-<h1>Required Functions:</h1>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co">#' Flexible Flow Normalization</span>
-<span class="co">#' </span>
-<span class="co">#' @param eList named list with at least the Daily, Sample, and INFO dataframes</span>
-<span class="co">#' @param nSegments integer number of flow normalized segments to create</span>
-<span class="co">#' @param segStart integer vector of start years (water) for each FN conc/flux segment</span>
-<span class="co">#' @param segEnd integer vector of end years (water) for each FN conc/flux segment</span>
-<span class="co">#' @param dStart Date vector of start days for each flow segment</span>
-<span class="co">#' @param dEnd Date vector of end days for each flow segment</span>
-<span class="co">#' </span>
-<span class="co">#' @export</span>
-<span class="co">#' @examples</span>
-<span class="co">#' eList &lt;- Choptank_eList</span>
-<span class="co">#' eList &lt;- setUpEstimation(eList)</span>
-<span class="co">#' nSegments &lt;- 2</span>
-<span class="co">#' segStart &lt;- c(1985,2000)</span>
-<span class="co">#' segEnd &lt;- c(2001,2010)</span>
-<span class="co">#' dStart &lt;- as.Date(c(&quot;1988-10-01&quot;,&quot;2002-05-15&quot;))</span>
-<span class="co">#' dEnd &lt;- as.Date(c(&quot;1998-09-30&quot;,&quot;2009-09-30&quot;))</span>
-<span class="co">#' eList &lt;- flexFN(eList,nSegments,segStart,segEnd,dStart,dEnd)</span>
-<span class="co">#' plotFluxHist(eList)</span>
-flexFN &lt;-<span class="st"> </span>function(eList, nSegments, segStart, segEnd,dStart,dEnd){
-  
-  dateInfo &lt;-<span class="st"> </span><span class="kw">data.frame</span>(segStart,segEnd,dStart,dEnd)
-  
-  if(<span class="kw">nrow</span>(dateInfo) !=<span class="st"> </span>nSegments){
-    <span class="kw">stop</span>(<span class="st">&quot;Length of segStart and segEnd must equal nSegments&quot;</span>)
-  }
-  
-  Daily &lt;-<span class="st"> </span>eList$Daily
-  Sample &lt;-<span class="st"> </span>eList$Sample
-  
-  Sample$WaterYear &lt;-<span class="st"> </span><span class="kw">as.integer</span>(Sample$DecYear)
-  Sample$WaterYear[Sample$Month &gt;=<span class="st"> </span><span class="dv">10</span>] &lt;-<span class="st"> </span>Sample$WaterYear[Sample$Month &gt;=<span class="st"> </span><span class="dv">10</span>] +<span class="dv">1</span>
-  
-  Daily$WaterYear &lt;-<span class="st"> </span><span class="kw">as.integer</span>(Daily$DecYear)
-  Daily$WaterYear[Daily$Month &gt;=<span class="st"> </span><span class="dv">10</span>] &lt;-<span class="st"> </span>Daily$WaterYear[Daily$Month &gt;=<span class="st"> </span><span class="dv">10</span>] +<span class="dv">1</span>
-  
-  yStartSample &lt;-<span class="st"> </span><span class="kw">min</span>(Sample$WaterYear)
-  yEndSample &lt;-<span class="st"> </span><span class="kw">max</span>(Sample$WaterYear)
-  
-  yStartDaily &lt;-<span class="st"> </span><span class="kw">min</span>(Daily$WaterYear)
-  yEndDaily &lt;-<span class="st"> </span><span class="kw">max</span>(Daily$WaterYear)
-  
-  checkWY &lt;-<span class="st"> </span>function(dates, yStart, yEnd){
-    segWY &lt;-<span class="st"> </span><span class="kw">as.integer</span>(<span class="kw">format</span>(dates,<span class="st">&quot;%Y&quot;</span>))
-    segMonth &lt;-<span class="st"> </span><span class="kw">as.integer</span>(<span class="kw">format</span>(dates,<span class="st">&quot;%m&quot;</span>))
-    segWY[segMonth &gt;<span class="st"> </span><span class="dv">9</span>] &lt;-<span class="st"> </span>segWY[segMonth &gt;<span class="st"> </span><span class="dv">9</span>]+<span class="dv">1</span>
-    
-    if(segWY[<span class="dv">1</span>] &lt;<span class="st"> </span>yStart |<span class="st"> </span>segWY[<span class="kw">length</span>(segWY)] &gt;<span class="st"> </span>yEnd){
-      <span class="kw">stop</span>(<span class="st">&quot;Flow segment dates outside range&quot;</span>)
-    }
-    <span class="kw">return</span>(segWY)
-  }
-  
-  if(segStart[<span class="dv">1</span>] &lt;<span class="st"> </span>yStartSample |<span class="st"> </span>segEnd[<span class="kw">length</span>(segEnd)] &gt;<span class="st"> </span>yEndSample){
-    <span class="kw">stop</span>(<span class="st">&quot;Sample segment years outside range&quot;</span>)
-  }
-  
-  if(nSegments&gt;<span class="dv">1</span>){
-    for(i in (<span class="kw">seq</span>(nSegments<span class="dv">-1</span>)+<span class="dv">1</span>)){
-      if(segStart[i] !=<span class="st"> </span>segEnd[i<span class="dv">-1</span>] -<span class="dv">1</span>){
-        <span class="kw">stop</span>(<span class="st">&quot;segStart and segEnd need to be continuous&quot;</span>)
-      }
-    }
-  }
-
-  dStartWY &lt;-<span class="st"> </span><span class="kw">checkWY</span>(dStart, yStartDaily, yEndDaily)  
-  dEndWY &lt;-<span class="st"> </span><span class="kw">checkWY</span>(dEnd, yStartDaily, yEndDaily)
-
-  if(<span class="kw">any</span>(<span class="kw">as.integer</span>(dEnd -<span class="st"> </span>dStart) &lt;<span class="st"> </span><span class="dv">365</span>)){
-    <span class="kw">stop</span>(<span class="st">&quot;Each flow normaliziation section must span at least 365 days&quot;</span>)
-  }
-
-  DailyFN &lt;-<span class="st"> </span><span class="kw">estDailyFromSurfaces</span>(eList)
-  DailyFN$FNConc &lt;-<span class="st"> </span><span class="ot">NULL</span>
-  DailyFN$FNFlux &lt;-<span class="st"> </span><span class="ot">NULL</span>
-  
-  newList &lt;-<span class="st"> </span><span class="kw">as.egret</span>(eList$INFO,DailyFN,Sample,eList$surfaces)
-  
-  for(i in <span class="kw">seq</span>(nSegments)){
-    dailyReturn &lt;-<span class="st"> </span><span class="kw">estFNsegs</span>(newList,segStart[i],segEnd[i],dStart[i],dEnd[i])
-    DailyFN &lt;-<span class="st"> </span><span class="kw">merge</span>(DailyFN, dailyReturn[,<span class="kw">c</span>(<span class="st">&quot;Date&quot;</span>,<span class="st">&quot;FNConc&quot;</span>,<span class="st">&quot;FNFlux&quot;</span>)],<span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;Date&quot;</span>),<span class="dt">all.x=</span><span class="ot">TRUE</span>)
-  }
-  FNConcCols &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;FNConc&quot;</span>,<span class="kw">names</span>(DailyFN))
-  FNConcCols &lt;-<span class="st"> </span><span class="kw">names</span>(DailyFN)[FNConcCols]
-
-  FNFluxCols &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;FNFlux&quot;</span>,<span class="kw">names</span>(DailyFN))
-  FNFluxCols &lt;-<span class="st"> </span><span class="kw">names</span>(DailyFN)[FNFluxCols]
-  
-  DailyFN$FNConc &lt;-<span class="st"> </span><span class="kw">rowSums</span>(DailyFN[,FNConcCols],<span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
-  DailyFN$FNFlux &lt;-<span class="st"> </span><span class="kw">rowSums</span>(DailyFN[,FNFluxCols],<span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
-  
-  DailyFN[<span class="kw">rowSums</span>(<span class="kw">is.na</span>(DailyFN[,FNConcCols]))==<span class="kw">length</span>(FNConcCols),<span class="st">&quot;FNConc&quot;</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
-  DailyFN[<span class="kw">rowSums</span>(<span class="kw">is.na</span>(DailyFN[,FNFluxCols]))==<span class="kw">length</span>(FNFluxCols),<span class="st">&quot;FNFlux&quot;</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
-  
-  DailyFN &lt;-<span class="st"> </span>DailyFN[,!(<span class="kw">names</span>(DailyFN) %in%<span class="st"> </span><span class="kw">c</span>(FNConcCols,FNFluxCols))]
-  
-  INFO &lt;-<span class="st"> </span>eList$INFO
-  INFO$shortName &lt;-<span class="st"> </span><span class="kw">paste0</span>(INFO$shortName,<span class="st">&quot;*&quot;</span>)
-  INFO$nSegments &lt;-<span class="st"> </span>nSegments
-  
-  <span class="kw">attr</span>(INFO,<span class="st">&quot;segmentInfo&quot;</span>) &lt;-<span class="st"> </span>dateInfo
-  
-  newList &lt;-<span class="st"> </span><span class="kw">as.egret</span>(INFO,DailyFN,Sample,eList$surfaces)
-  
-  <span class="kw">return</span>(newList)
-  
-}
-
-
-<span class="co">#' Segment estimates</span>
-<span class="co">#' </span>
-<span class="co">#' @param eList named list with at least the Daily, Sample, and INFO dataframes</span>
-<span class="co">#' @param segStart_i integer vector of start years (water) for each FN conc/flux segment</span>
-<span class="co">#' @param segEnd_i integer vector of end years (water) for each FN conc/flux segment</span>
-<span class="co">#' @param dStart_i Date vector of start days for each flow segment</span>
-<span class="co">#' @param dEnd_i Date vector of end days for each flow segment</span>
-<span class="co">#' </span>
-<span class="co">#' @export</span>
-<span class="co">#' @examples</span>
-<span class="co">#' eList &lt;- Choptank_eList</span>
-<span class="co">#' eList &lt;- setUpEstimation(eList)</span>
-<span class="co">#' nSegments &lt;- 2</span>
-<span class="co">#' segStart &lt;- c(1985,2000)</span>
-<span class="co">#' segEnd &lt;- c(2001,2010)</span>
-<span class="co">#' dStart &lt;- as.Date(c(&quot;1988-10-01&quot;,&quot;2002-05-15&quot;))</span>
-<span class="co">#' dEnd &lt;- as.Date(c(&quot;1998-09-30&quot;,&quot;2009-09-30&quot;))</span>
-<span class="co">#' eList &lt;- estFNsegs(eList,segStart[1],segEnd[1],dStart[1],dEnd[1])</span>
-estFNsegs &lt;-<span class="st"> </span>function(eList, segStart_i,segEnd_i,dStart_i,dEnd_i){
-  
-  Daily &lt;-<span class="st"> </span>eList$Daily
-  Sample &lt;-<span class="st"> </span>eList$Sample
-  
-  Daily &lt;-<span class="st"> </span>Daily[Daily$Date &gt;=<span class="st"> </span>dStart_i &amp;<span class="st"> </span>Daily$Date &lt;=<span class="st"> </span>dEnd_i,]
-  
-  Sample$WaterYear &lt;-<span class="st"> </span><span class="kw">as.integer</span>(Sample$DecYear)
-  Sample$WaterYear[Sample$Month &gt;=<span class="st"> </span><span class="dv">10</span>] &lt;-<span class="st"> </span>Sample$WaterYear[Sample$Month &gt;=<span class="st"> </span><span class="dv">10</span>] +<span class="dv">1</span>
-  Sample &lt;-<span class="st"> </span>Sample[Sample$WaterYear &gt;=<span class="st"> </span>segStart_i &amp;<span class="st"> </span>Sample$WaterYear &lt;=<span class="st"> </span>segEnd_i,]
-  
-  newList &lt;-<span class="st"> </span><span class="kw">as.egret</span>(eList$INFO,Daily,Sample,eList$surfaces)
-  
-  newDaily &lt;-<span class="st"> </span><span class="kw">estDailyFromSurfaces</span>(newList)
-  <span class="kw">return</span>(newDaily)
-}</code></pre>
-</div>
 <div id="sample-workflow" class="section level1">
 <h1>Sample workflow:</h1>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(EGRET)
 eList &lt;-<span class="st"> </span>Choptank_eList
 eList &lt;-<span class="st"> </span><span class="kw">setUpEstimation</span>(eList)
 
-nSegments &lt;-<span class="st"> </span><span class="dv">2</span>
-segStart &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1985</span>,<span class="dv">2000</span>) <span class="co">#Sample start year for segments</span>
-segEnd &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">2001</span>,<span class="dv">2010</span>) <span class="co">#Sample end years for segments</span>
-dStart &lt;-<span class="st"> </span><span class="kw">as.Date</span>(<span class="kw">c</span>(<span class="st">&quot;1988-10-01&quot;</span>,<span class="st">&quot;2002-05-15&quot;</span>)) <span class="co">#Flow starting days</span>
-dEnd &lt;-<span class="st"> </span><span class="kw">as.Date</span>(<span class="kw">c</span>(<span class="st">&quot;1998-09-30&quot;</span>,<span class="st">&quot;2009-09-30&quot;</span>)) <span class="co">#Flow ending days</span>
-eList &lt;-<span class="st"> </span><span class="kw">flexFN</span>(eList,nSegments,segStart,segEnd,dStart,dEnd)</code></pre>
+sampleSegStart &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1980</span>,<span class="dv">1990</span>,<span class="dv">2000</span>)
+flowSegStart &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1980</span>,<span class="dv">1985</span>,<span class="dv">1992</span>)
+flowSegEnd &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1994</span>,<span class="dv">2004</span>,<span class="dv">2011</span>)
+eList &lt;-<span class="st"> </span><span class="kw">flexFN</span>(eList,sampleSegStart, flowSegStart, flowSegEnd)</code></pre>
 </div>
 <div id="sample-output" class="section level1">
 <h1>Sample Output:</h1>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lubridate)
-<span class="kw">plotFluxHist</span>(eList)
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(RColorBrewer)
+
+
 
 if(<span class="st">'segmentInfo'</span> %in%<span class="st"> </span><span class="kw">names</span>(<span class="kw">attributes</span>(eList$INFO))){
   segmentINFO &lt;-<span class="st"> </span><span class="kw">attr</span>(eList$INFO, <span class="st">&quot;segmentInfo&quot;</span>)
   
-  for(i in <span class="dv">1</span>:<span class="kw">length</span>(segmentINFO$dStart)){
-    <span class="kw">rect</span>(<span class="kw">decimal_date</span>(segmentINFO$dStart)[i], <span class="kw">par</span>()$usr[<span class="dv">3</span>], 
-         <span class="kw">decimal_date</span>(segmentINFO$dEnd)[i], <span class="kw">par</span>()$usr[<span class="dv">4</span>],
-         <span class="dt">col=</span> <span class="st">&quot;#FF003322&quot;</span>)    
+  <span class="kw">plotFluxHist</span>(eList, <span class="dt">yearStart =</span> <span class="kw">min</span>(segmentINFO$flowSegStart),
+                      <span class="dt">yearEnd =</span> <span class="kw">max</span>(segmentINFO$flowSegEnd +<span class="st"> </span><span class="dv">1</span>))
+  
+  colors &lt;-<span class="st"> </span><span class="kw">brewer.pal</span>(<span class="kw">nrow</span>(segmentINFO), <span class="st">&quot;Accent&quot;</span>)
+  
+  arrowYs &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="kw">par</span>()$usr[<span class="dv">4</span>], <span class="kw">par</span>()$usr[<span class="dv">3</span>], <span class="dt">length=</span><span class="dv">10</span>)[<span class="kw">c</span>(-<span class="dv">1</span>,-<span class="dv">10</span>)]
+  
+  if(<span class="kw">nrow</span>(segmentINFO) &gt;<span class="st"> </span><span class="dv">8</span>){
+    arrowYs &lt;-<span class="st"> </span><span class="kw">c</span>(arrowYs, <span class="kw">seq</span>(<span class="kw">par</span>()$usr[<span class="dv">3</span>], <span class="kw">par</span>()$usr[<span class="dv">4</span>], <span class="dt">length=</span><span class="dv">10</span>)[<span class="kw">c</span>(-<span class="dv">1</span>,-<span class="dv">10</span>)])
   }
   
-  <span class="kw">abline</span>(<span class="dt">v=</span>segmentINFO$segStart, <span class="dt">col=</span><span class="st">&quot;blue&quot;</span>)
-  <span class="kw">abline</span>(<span class="dt">v=</span>segmentINFO$segEnd<span class="dv">-1</span>, <span class="dt">col=</span><span class="st">&quot;blue&quot;</span>)
+  for(i in <span class="dv">1</span>:<span class="kw">nrow</span>(segmentINFO)){
+    
+    
+    <span class="kw">rect</span>(segmentINFO$sampleSegStart[i], <span class="kw">par</span>()$usr[<span class="dv">3</span>], 
+         segmentINFO$sampleSegEnd[i]+<span class="dv">1</span>, <span class="kw">par</span>()$usr[<span class="dv">4</span>],
+         <span class="dt">col=</span> <span class="kw">paste0</span>(colors[i],<span class="st">&quot;50&quot;</span>)) 
+    
+    <span class="kw">arrows</span>(segmentINFO$flowSegStart[i], arrowYs[i], 
+           segmentINFO$flowSegEnd[i]+<span class="dv">1</span>, arrowYs[i], <span class="dt">code=</span><span class="dv">3</span>)
+  }
 
-  <span class="kw">legend</span>(<span class="st">&quot;topleft&quot;</span>, <span class="dt">legend=</span><span class="kw">c</span>(<span class="st">&quot;Sample segment limits&quot;</span>,
-                             <span class="st">&quot;Flow segment limits&quot;</span>),<span class="dt">lwd=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">0</span>),
-         <span class="dt">col=</span><span class="kw">c</span>(<span class="st">&quot;blue&quot;</span>,<span class="st">&quot;#FF003322&quot;</span>),<span class="dt">lty=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">0</span>),<span class="dt">pch=</span><span class="kw">c</span>(<span class="ot">NA</span>,<span class="dv">15</span>))
 }</code></pre>
-<p><img src="data:image/png;base64,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" /></p>
+<p><img src="data:image/png;base64,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" /></p>
 </div>
 <div id="disclaimer" class="section level1">
 <h1>Disclaimer</h1>

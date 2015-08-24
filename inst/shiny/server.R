@@ -367,6 +367,8 @@ shinyServer(function(input, output) {
   
   output$modelCode <- renderPrint({
     
+    eList <- eList()
+    
     if(is.null(input$qUnit)){
       qUnit = 1
     } else {
@@ -391,9 +393,39 @@ shinyServer(function(input, output) {
       paLong = as.integer(input$paLong)
     }
     
+    if(is.null(input$date1)){
+      date1 = as.Date(quantile(eList$Daily$Date, type=1, probs = 0.1), origin="1970-01-01")
+    } else {
+      date1 = input$date1
+    }
+    
+    if(is.null(input$date2)){
+      date2 = as.Date(quantile(eList$Daily$Date, type=1, probs = 0.5), origin="1970-01-01")
+    } else {
+      date2 = input$date2
+    }
+    
+    if(is.null(input$date3)){
+      date3 = as.Date(quantile(eList$Daily$Date, type=1, probs = 0.9), origin="1970-01-01")
+    } else {
+      date3 = input$date3
+    }
+    
+    if(is.null(input$qLow)){
+      qLow = quantile(eList$Daily$Q, probs = 0.1)
+    } else {
+      qLow = input$qLow
+    }
+    
+    if(is.null(input$qHigh)){
+      qHigh = quantile(eList$Daily$Q, probs = 0.9)
+    } else {
+      qHigh = input$qHigh
+    }
+    
     outText <- switch(input$modelPlots,
            "plotConcTimeDaily" = paste0("plotConcTimeDaily(eList)"),
-           "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
+           "plotFluxTimeDaily" = paste0("plotFluxTimeDaily(eList, fluxUnit = ", fluxUnit),
            "plotConcPred" = paste0("plotConcPred(eList)"),
            "plotFluxPred" = paste0("plotFluxPred(eList, fluxUnit = ", fluxUnit, ")"),
            "plotResidPred" = paste0("plotResidPred(eList)"),
@@ -403,7 +435,8 @@ shinyServer(function(input, output) {
            "boxConcThree" = paste0("boxConcThree(eList)"),
            "plotConcHist" = paste0("plotConcHist(eList)"),
            "plotFluxHist" = paste0("plotFluxHist(eList, fluxUnit = ", fluxUnit, ")"),
-           # "plotConcQSmooth" = plotConcQSmooth(eList),
+           "plotConcQSmooth" = paste0("plotConcQSmooth(eList, date1 = '",date1, "', date2 = '",
+                                      date2,"', date3 = '",date3, "', qLow = ",qLow,", qHigh = ",qHigh,")"),
            # "plotConcTimeSmooth" = plotConcTimeSmooth(eList),
            "fluxBiasMulti" = paste0("fluxBiasMulti(eList, qUnit = ", qUnit,", fluxUnit = ", fluxUnit, ")")
            # "plotContours" = plotContours(eList, qUnit=qUnit),

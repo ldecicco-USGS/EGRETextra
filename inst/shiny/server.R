@@ -312,7 +312,7 @@ shinyServer(function(input, output) {
       eList <- eList()
       qFactor <- qConst[shortCode=as.integer(input$qUnit)][[1]]
       qFactor <- qFactor@qUnitFactor
-      numericInput("qLow", label = h5("qLow"), value = qFactor * round(quantile(eList$Daily$Q, probs = 0.1),digits = 1))
+      numericInput("qLow", label = h5("qLow"), value = round(qFactor * quantile(eList$Daily$Q, probs = 0.1),digits = 1))
     }
   })
   
@@ -321,7 +321,7 @@ shinyServer(function(input, output) {
       eList <- eList()
       qFactor <- qConst[shortCode=as.integer(input$qUnit)][[1]]
       qFactor <- qFactor@qUnitFactor
-      numericInput("qHigh", label = h5("qHigh"), value = qFactor * round(quantile(eList$Daily$Q, probs = 0.9),digits = 1))
+      numericInput("qHigh", label = h5("qHigh"), value = round(qFactor * quantile(eList$Daily$Q, probs = 0.9),digits = 1))
     }
   })
   
@@ -330,7 +330,7 @@ shinyServer(function(input, output) {
       eList <- eList()
       qFactor <- qConst[shortCode=as.integer(input$qUnit)][[1]]
       qFactor <- qFactor@qUnitFactor
-      numericInput("qMid", label = h5("qMid"), value = qFactor * round(quantile(eList$Daily$Q, probs = 0.5),digits = 1))
+      numericInput("qMid", label = h5("qMid"), value = round(qFactor * quantile(eList$Daily$Q, probs = 0.5),digits = 1))
     }
   })
   

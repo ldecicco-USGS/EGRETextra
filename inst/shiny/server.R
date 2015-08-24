@@ -475,6 +475,30 @@ shinyServer(function(input, output) {
       qHigh = input$qHigh
     }
     
+    if(is.null(input$qMid)){
+      qMid = round(quantile(eList$Daily$Q, probs = 0.5),digits = 1)
+    } else {
+      qMid = input$qMid
+    }
+    
+    if(is.null(input$centerDate)){
+      centerDate = "04-01"
+    } else {
+      centerDate = input$centerDate
+    }
+    
+    if(is.null(input$yearStart)){
+      yearStart = ceiling(min(eList$Daily$DecYear))
+    } else {
+      yearStart = as.integer(input$yearStart)
+    }
+    
+    if(is.null(input$yearEnd)){
+      yearEnd = floor(max(eList$Daily$DecYear))
+    } else {
+      yearEnd = as.integer(input$yearEnd)
+    }
+    
     outText <- switch(input$modelPlots,
            "plotConcTimeDaily" = paste0("plotConcTimeDaily(eList)"),
            "plotFluxTimeDaily" = paste0("plotFluxTimeDaily(eList, fluxUnit = ", fluxUnit),
@@ -489,7 +513,9 @@ shinyServer(function(input, output) {
            "plotFluxHist" = paste0("plotFluxHist(eList, fluxUnit = ", fluxUnit, ")"),
            "plotConcQSmooth" = paste0("plotConcQSmooth(eList, date1 = '",date1, "', date2 = '",
                                       date2,"', date3 = '",date3, "', qLow = ",qLow,", qHigh = ",qHigh,")"),
-           "plotConcTimeSmooth" = paste0("plotConcTimeSmooth(eList",")"),
+           "plotConcTimeSmooth" = paste0("plotConcTimeSmooth(eList, q1 = ",qLow,
+                                         ", q2 = ",qMid, ", q3 = ",qHigh, ", yearStart = ",
+                                         yearStart,", yearEnd = ",yearEnd,", centerDate = ",centerDate,")"),
            "fluxBiasMulti" = paste0("fluxBiasMulti(eList, qUnit = ", qUnit,", fluxUnit = ", fluxUnit, ")")
            # "plotContours" = plotContours(eList, qUnit=qUnit),
            # "plotDiffContours" = plotDiffContours(eList, qUnit=qUnit)

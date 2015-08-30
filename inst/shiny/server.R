@@ -191,6 +191,26 @@ shinyServer(function(input, output) {
       maxDiff = as.integer(input$maxDiff)
     }
     
+    contours <- pretty(c(min(eList$surfaces[,,3]), max(eList$surfaces[,,3])), n=5)
+    
+    if(is.null(input$from)){
+      from <- contours[1]
+    } else {
+      from = as.numeric(input$from)
+    }
+    
+    if(is.null(input$to)){
+      to <- contours[length(contours)]
+    } else {
+      to = as.numeric(input$to)
+    }
+    
+    if(is.null(input$by)){
+      by <- 5
+    } else {
+      by = as.integer(input$by)
+    }
+    
     switch(input$modelPlots,
            "plotConcTimeDaily" = plotConcTimeDaily(eList),
            "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
@@ -208,7 +228,7 @@ shinyServer(function(input, output) {
                                                      centerDate=centerDate,yearStart=yearStart, yearEnd=yearEnd),
            "fluxBiasMulti" = fluxBiasMulti(eList, fluxUnit=fluxUnit, qUnit=qUnit),
            "plotContours" = plotContours(eList, qUnit=qUnit,yearStart = yearStart, yearEnd = yearEnd,
-                                         qBottom = qLow, qTop=qHigh),
+                                         qBottom = qLow, qTop=qHigh,contourLevels = seq(from, to, length.out =by)),
            "plotDiffContours" = plotDiffContours(eList, year0=yearStart,year1 = yearEnd, maxDiff = maxDiff,
                                                  qUnit=qUnit,qBottom = qLow, qTop=qHigh)
            )
@@ -253,6 +273,28 @@ shinyServer(function(input, output) {
       radioButtons("logScaleData", label = h4("Scale"),
                    choices = list("Linear" = 0, "Log" = 1), 
                    selected = 0)
+    }
+  })
+  
+  output$from <- renderUI({
+    if(input$modelPlots %in% c("plotContours")){
+      eList <- eList()
+      contours <- pretty(c(min(eList$surfaces[,,3]), max(eList$surfaces[,,3])), n=5)
+      numericInput("from", label = h5("From"), value = contours[1])
+    }
+  })  
+  
+  output$to <- renderUI({
+    if(input$modelPlots %in% c("plotContours")){
+      eList <- eList()
+      contours <- pretty(c(min(eList$surfaces[,,3]), max(eList$surfaces[,,3])), n=5)
+      numericInput("to", label = h5("To"), value = contours[length(contours)])
+    }
+  })
+  
+  output$by <- renderUI({
+    if(input$modelPlots %in% c("plotContours")){
+      numericInput("by", label = h5("By"), value = 5)
     }
   })
   

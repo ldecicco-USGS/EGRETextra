@@ -188,7 +188,7 @@ shinyServer(function(input, output) {
     if(is.null(input$maxDiff)){
       maxDiff = diff(range(eList$Sample$ConcAve))
     } else {
-      maxDiff = as.integer(input$maxDiff)
+      maxDiff = round(as.numeric(input$maxDiff),digits = 3)
     }
     
     contours <- pretty(c(min(eList$surfaces[,,3]), max(eList$surfaces[,,3])), n=5)
@@ -294,7 +294,7 @@ shinyServer(function(input, output) {
   
   output$by <- renderUI({
     if(input$modelPlots %in% c("plotContours")){
-      numericInput("by", label = h5("By"), value = 5)
+      numericInput("by", label = h5("Number of divisions"), value = 5)
     }
   })
   
@@ -568,6 +568,26 @@ shinyServer(function(input, output) {
       maxDiff = as.integer(input$maxDiff)
     }
     
+    contours <- pretty(c(min(eList$surfaces[,,3]), max(eList$surfaces[,,3])), n=5)
+    
+    if(is.null(input$from)){
+      from <- contours[1]
+    } else {
+      from = as.numeric(input$from)
+    }
+    
+    if(is.null(input$to)){
+      to <- contours[length(contours)]
+    } else {
+      to = as.numeric(input$to)
+    }
+    
+    if(is.null(input$by)){
+      by <- 5
+    } else {
+      by = as.integer(input$by)
+    }
+    
     outText <- switch(input$modelPlots,
            "plotConcTimeDaily" = paste0("plotConcTimeDaily(eList)"),
            "plotFluxTimeDaily" = paste0("plotFluxTimeDaily(eList, fluxUnit = ", fluxUnit),
@@ -587,7 +607,8 @@ shinyServer(function(input, output) {
                                          yearStart,", yearEnd = ",yearEnd,", centerDate = ",centerDate,")"),
            "fluxBiasMulti" = paste0("fluxBiasMulti(eList, qUnit = ", qUnit,", fluxUnit = ", fluxUnit, ")"),
            "plotContours" = paste0("plotContours(eList, qUnit=", qUnit,", yearStart = ",yearStart,
-                                   ", yearEnd = ",yearEnd,", qBottom = ",qLow,", qTop = ",qHigh,")"),
+                                   ", yearEnd = ",yearEnd,", qBottom = ",qLow,", qTop = ",qHigh,
+                                   ", contourLevels = seq(",from,", ",to,", length.out=",by, "))"),
            "plotDiffContours" = paste0("plotDiffContours(eList, qUnit=",qUnit,", year0=",yearStart,",year1 = ",
                                        yearEnd,", qBottom = ",qLow,", qTop = ",qHigh, ", maxDiff = ",maxDiff,")")
     )

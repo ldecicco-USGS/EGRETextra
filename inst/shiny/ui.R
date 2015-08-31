@@ -48,7 +48,7 @@ shinyUI(
              tabsetPanel(
                tabPanel("Flow History",
                         fluidRow(
-                          column(4,
+                          column(3,
                               selectInput("flowPlots", label = "Flow History", 
                                  choices = c("plotFlowSingle","plotSDLogQ","plotQTimeDaily","plotFour","plotFourStats"),
                                  selected = "plotFlowSingle", multiple = FALSE),
@@ -56,25 +56,27 @@ shinyUI(
                               uiOutput("flowLog"),
                               h4("R Code:"),
                               htmlOutput("flowCode")),
-                          column(8,
-                                 plotOutput("flowPlotsOut"))
+                          column(9,
+                                 plotOutput("flowPlotsOut"),
+                                 downloadButton('downloadFlowPlot', 'Download Plot'))
                         )),
                tabPanel("Explore Data",
                         htmlOutput("SampleText"),
                         fluidRow(
-                          column(4,
+                          column(3,
                              selectInput("dataPlots", label = "Data", 
                                  choices = c("boxConcMonth","boxQTwice","plotConcTime","plotConcQ","multiPlotDataOverview"),
                                  selected = "multiPlotDataOverview", multiple = FALSE) ,
                              uiOutput("dataLog"),
                              h4("R Code:"),
                              htmlOutput("dataCode")),
-                        column(8,
-                               plotOutput("dataPlotsOut"))
+                        column(9,
+                               plotOutput("dataPlotsOut"),
+                               downloadButton('downloadDataPlot', 'Download Plot'))
                       )),
                tabPanel("Explore Model",
                         fluidRow(
-                          column(4,
+                          column(3,
                              selectInput("modelPlots", label = "Data", 
                                  choices = c("plotConcTimeDaily","plotFluxTimeDaily","plotConcPred","plotFluxPred","plotResidPred",
                                              "plotResidQ","plotResidTime","boxResidMonth","boxConcThree",
@@ -95,10 +97,12 @@ shinyUI(
                              uiOutput("from"),
                              uiOutput("to"),
                              uiOutput("by"),
+                             uiOutput("animate"),
                              h4("R Code:"),
                              htmlOutput("modelCode")),
-                        column(8,
-                               plotOutput("modelPlotsOut"))
+                        column(9,
+                               plotOutput("modelPlotsOut"),
+                               downloadButton('downloadModelPlot', 'Download Plot'))
                     
                     ))
              )),

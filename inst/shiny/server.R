@@ -51,7 +51,11 @@ shinyServer(function(input, output) {
     
   })
   
-  output$flowPlotsOut <- renderPlot({ 
+  output$flowPlotsOut <- renderPlot({
+    flowPlotsStuff()
+  })
+  
+  flowPlotsStuff <- reactive({ 
     
     eList <- eList()
     
@@ -81,9 +85,25 @@ shinyServer(function(input, output) {
            "plotFourStats" = plotFourStats(eList, qUnit = qUnit)
            
            )
+    
+    pdf("plot.pdf")
+    switch(input$flowPlots,
+           "plotFlowSingle" = plotFlowSingle(eList, istat=stat, qUnit = qUnit),
+           "plotSDLogQ" = plotSDLogQ(eList),
+           "plotQTimeDaily" = plotQTimeDaily(eList, qUnit = qUnit, logScale = logScale),
+           "plotFour" = plotFour(eList, qUnit = qUnit),
+           "plotFourStats" = plotFourStats(eList, qUnit = qUnit)
+           
+    )
+    dev.off()
+    
   })
   
   output$dataPlotsOut <- renderPlot({ 
+    dataPlotsStuff()
+  })
+  
+  dataPlotsStuff <- reactive({ 
     
     eList <- eList()
     
@@ -107,10 +127,24 @@ shinyServer(function(input, output) {
            "multiPlotDataOverview" = multiPlotDataOverview(eList, qUnit = qUnit)
            
     )
+    
+    pdf("plot.pdf")
+    switch(input$dataPlots,
+           "boxConcMonth" = boxConcMonth(eList, logScale = logScale),
+           "boxQTwice" = boxQTwice(eList, qUnit = qUnit),
+           "plotConcTime" = plotConcTime(eList, logScale = logScale),
+           "plotConcQ" = plotConcQ(eList, qUnit = qUnit, logScale = logScale),
+           "multiPlotDataOverview" = multiPlotDataOverview(eList, qUnit = qUnit)
+           
+    )
+    dev.off()
   })
   
   output$modelPlotsOut <- renderPlot({
-    
+    modelPlotsStuff()
+  })
+  
+  modelPlotsStuff <- reactive({   
     eList <- eList()
     
     if(is.null(input$date1)){
@@ -210,7 +244,31 @@ shinyServer(function(input, output) {
     } else {
       by = as.integer(input$by)
     }
+
+    switch(input$modelPlots,
+           "plotConcTimeDaily" = plotConcTimeDaily(eList),
+           "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
+           "plotConcPred" = plotConcPred(eList, logScale = logScale),
+           "plotFluxPred" = plotFluxPred(eList, fluxUnit=fluxUnit),
+           "plotResidPred" = plotResidPred(eList),
+           "plotResidQ" = plotResidQ(eList, qUnit=qUnit),
+           "plotResidTime" = plotResidTime(eList),
+           "boxResidMonth" = boxResidMonth(eList),
+           "boxConcThree" = boxConcThree(eList),
+           "plotConcHist" = plotConcHist(eList),
+           "plotFluxHist" = plotFluxHist(eList, fluxUnit=fluxUnit),
+           "plotConcQSmooth" = plotConcQSmooth(eList, date1=date1,date2=date2, date3=date3,qLow=qLow,qHigh=qHigh),
+           "plotConcTimeSmooth" = plotConcTimeSmooth(eList, q1=qLow, q2=qMid, q3=qHigh, logScale = logScale,
+                                                     centerDate=centerDate,yearStart=yearStart, yearEnd=yearEnd),
+           "fluxBiasMulti" = fluxBiasMulti(eList, fluxUnit=fluxUnit, qUnit=qUnit),
+           "plotContours" = plotContours(eList, qUnit=qUnit,yearStart = yearStart, yearEnd = yearEnd,
+                                         qBottom = qLow, qTop=qHigh,contourLevels = seq(from, to, length.out =by)),
+           "plotDiffContours" = plotDiffContours(eList, year0=yearStart,year1 = yearEnd, maxDiff = maxDiff,
+                              qUnit=qUnit,qBottom = qLow, qTop=qHigh)
+
+           )
     
+    pdf("plot.pdf")
     switch(input$modelPlots,
            "plotConcTimeDaily" = plotConcTimeDaily(eList),
            "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
@@ -231,7 +289,10 @@ shinyServer(function(input, output) {
                                          qBottom = qLow, qTop=qHigh,contourLevels = seq(from, to, length.out =by)),
            "plotDiffContours" = plotDiffContours(eList, year0=yearStart,year1 = yearEnd, maxDiff = maxDiff,
                                                  qUnit=qUnit,qBottom = qLow, qTop=qHigh)
-           )
+           
+    )
+    dev.off()
+    
   })
   
   output$SampleText <- renderUI({
@@ -292,6 +353,12 @@ shinyServer(function(input, output) {
     }
   })
   
+#   output$animate <- renderUI({
+#     if(input$modelPlots %in% c("plotDiffContours")){
+#       checkboxInput("animate", "Animate", value = FALSE)
+#     }
+#   })
+#   
   output$by <- renderUI({
     if(input$modelPlots %in% c("plotContours")){
       numericInput("by", label = h5("Number of divisions"), value = 5)
@@ -617,5 +684,34 @@ shinyServer(function(input, output) {
                 "<h5>",outText,"</h5>"))
     
   })
+  
+  output$downloadModelPlot <- downloadHandler(
+    
+    filename = function() {
+      paste(input$modelPlots, "pdf", sep = ".")
+    },
+    content = function(file) {
+      file.copy("plot.pdf", file)
+    }
+  )
+  
+  output$downloadDataPlot <- downloadHandler(
+    filename = function() {
+      paste(input$dataPlots, "pdf", sep = ".")
+    },
+    content = function(file) {
+      
+      file.copy("plot.pdf", file)
+    }
+  )
+  
+  output$downloadFlowPlot <- downloadHandler(
+    filename = function() {
+      paste(input$flowPlots, "pdf", sep = ".")
+    },
+    content = function(file) {
+      file.copy("plot.pdf", file)
+    }
+  )
   
 })

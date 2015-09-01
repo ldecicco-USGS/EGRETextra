@@ -1,7 +1,7 @@
 Package: EGRETextra
 Type: Package
 Title: Exploration and Graphics for RivEr Trends (EGRET) Extra Code
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: c( person("Robert", "Hirsch", role = c("aut"),
     email = "rhirsch@usgs.gov"),
     person("Laura", "DeCicco", role = c("aut","cre"),
@@ -12,7 +12,8 @@ Depends:
     R (>= 3.0)
 Imports:
     EGRET (>= 2.1.1),
-    shiny
+    shiny,
+    fields
 Suggests:
     knitr,
     rmarkdown,

@@ -2,7 +2,8 @@
 
 export(calcWY)
 export(estFNsegs)
-export(explore_endpoints)
+export(explore_EGRET)
 export(flexFN)
 import(EGRET)
+importFrom(fields,interp.surface)
 importFrom(shiny,runApp)

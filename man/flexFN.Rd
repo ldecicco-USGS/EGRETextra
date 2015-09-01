@@ -4,16 +4,19 @@
 \alias{flexFN}
 \title{Flexible Flow Normalization}
 \usage{
-flexFN(eList, sampleSegStart, flowSegStart, flowSegEnd)
+flexFN(eList, dateInfo, sampleStart = "sampleSegStart",
+  flowStart = "flowSegStart", flowEnd = "flowSegEnd")
 }
 \arguments{
 \item{eList}{named list with at least the Daily, Sample, and INFO dataframes}
 
-\item{sampleSegStart}{integer vector of start years (water) for each FN conc/flux segment}
+\item{dateInfo}{data frame with 3 columns, their names defined by sampleStart, flowStart, flowEnd}
 
-\item{flowSegStart}{integer vector of start years (water) for flow normalization}
+\item{sampleStart}{integer vector of start years (water) for each FN conc/flux segment}
 
-\item{flowSegEnd}{integer vector of end years (water) for flow normalization}
+\item{flowStart}{integer vector of start years (water) for flow normalization}
+
+\item{flowEnd}{integer vector of end years (water) for flow normalization}
 }
 \description{
 Flexible Flow Normalization
@@ -25,7 +28,17 @@ eList <- setUpEstimation(eList)
 sampleSegStart <- c(1980,1990,2000)
 flowSegStart <- c(1980,1985,1992)
 flowSegEnd <- c(1994,2004,2011)
-eList <- flexFN(eList,sampleSegStart, flowSegStart, flowSegEnd)
+dateInfo <- data.frame(sampleSegStart, flowSegStart, flowSegEnd)
+eList <- flexFN(eList, dateInfo)
+plotFluxHist(eList)
+
+eList <- Choptank_eList
+eList <- setUpEstimation(eList)
+sampleSegStart <- c(1980,1985,2000)
+flowSegStart <- c(1980,1990,2000)
+flowSegEnd <- c(1990,2000,2010)
+dateInfo <- data.frame(sampleSegStart, flowSegStart, flowSegEnd)
+eList <- flexFN(eList, dateInfo)
 plotFluxHist(eList)
 }
 

@@ -6,6 +6,6 @@
 #' @export
 #' @importFrom shiny runApp
 #' @import EGRET
-explore_endpoints <- function(browse=TRUE){
+explore_EGRET <- function(browse=TRUE){
   runApp(system.file('shiny', package='EGRETextra'), launch.browser = browse)
 }

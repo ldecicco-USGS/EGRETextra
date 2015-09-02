@@ -44,35 +44,8 @@ eList <- flexFN(eList,dateInfo)
 #Sample Output:
 
 ```{r fig.height=6, fig.width=8, echo=FALSE}
-library(RColorBrewer)
-
-if('segmentInfo' %in% names(attributes(eList$INFO))){
-  segmentINFO <- attr(eList$INFO, "segmentInfo")
-  
-  plotFluxHist(eList, yearStart = min(segmentINFO$flowSegStart),
-                      yearEnd = max(segmentINFO$flowSegEnd + 1))
-  
-  colors <- brewer.pal(nrow(segmentINFO), "Accent")
-  
-  arrowYs <- seq(par()$usr[4], par()$usr[3], length=10)[c(-1,-10)]
-  
-  if(nrow(segmentINFO) > 8){
-    arrowYs <- c(arrowYs, seq(par()$usr[3], par()$usr[4], length=10)[c(-1,-10)])
-  }
-  
-  for(i in 1:nrow(segmentINFO)){
-    
-    rect(segmentINFO$sampleSegStart[i], par()$usr[3], 
-         segmentINFO$sampleSegEnd[i]+1, par()$usr[4],
-         col= paste0(colors[i],"50")) 
-    
-    arrows(segmentINFO$flowSegStart[i], arrowYs[i], 
-           segmentINFO$flowSegEnd[i]+1, arrowYs[i], code=3)
-  }
-
-}
-
-
+plotFluxHist(eList)
+flexPlotAddOn(eList)
 ```
 
 The different shadings represent sample segments, and the arrows represent flow segments.

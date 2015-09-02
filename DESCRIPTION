@@ -13,7 +13,8 @@ Depends:
 Imports:
     EGRET (>= 2.1.1),
     shiny,
-    fields
+    fields,
+    RColorBrewer
 Suggests:
     knitr,
     rmarkdown,

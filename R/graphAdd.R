@@ -1,6 +1,8 @@
 #' Flexible Flow Normalization Plot Add On
 #' 
 #' @param eList named list with at least the Daily, Sample, and INFO dataframes
+#' @param showArrows logical whether or not to show arrows representing flow segments
+#' @param showRect logical whether or not to show rectangles representing sample segments
 #' @export
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom graphics rect
@@ -26,7 +28,7 @@
 #' eList <- flexFN(eList, dateInfo)
 #' plotFluxHist(eList)
 #' flexPlotAddOn(eList)
-flexPlotAddOn <- function(eList){
+flexPlotAddOn <- function(eList, showArrows = TRUE, showRect = TRUE){
   if('segmentInfo' %in% names(attributes(eList$INFO))){
     segmentINFO <- attr(eList$INFO, "segmentInfo")
     
@@ -35,17 +37,22 @@ flexPlotAddOn <- function(eList){
     arrowYs <- seq(par()$usr[4], par()$usr[3], length=10)[c(-1,-10)]
     
     if(nrow(segmentINFO) > 8){
-      arrowYs <- c(arrowYs, seq(par()$usr[3], par()$usr[4], length=10)[c(-1,-10)])
+      arrowYs <- rep(arrowYs,  ceiling(nrow(segmentINFO)/8))
+      colors <- rep(colors, ceiling(nrow(segmentINFO)/8))
     }
     
     for(i in 1:nrow(segmentINFO)){
       
-      rect(segmentINFO$sampleSegStart[i], par()$usr[3], 
-           segmentINFO$sampleSegEnd[i]+1, par()$usr[4],
-           col= paste0(colors[i],"50")) 
-      
-      arrows(segmentINFO$flowSegStart[i], arrowYs[i], 
-             segmentINFO$flowSegEnd[i]+1, arrowYs[i], code=3)
+      if(showRect){
+        rect(segmentINFO$sampleSegStart[i], par()$usr[3], 
+             segmentINFO$sampleSegEnd[i]+1, par()$usr[4],
+             col= paste0(colors[i],"50"))         
+      }
+
+      if(showArrows){
+        arrows(segmentINFO$flowSegStart[i], arrowYs[i], 
+               segmentINFO$flowSegEnd[i]+1, arrowYs[i], code=3)
+      }
     }
     
   }

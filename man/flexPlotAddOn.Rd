@@ -4,10 +4,14 @@
 \alias{flexPlotAddOn}
 \title{Flexible Flow Normalization Plot Add On}
 \usage{
-flexPlotAddOn(eList)
+flexPlotAddOn(eList, showArrows = TRUE, showRect = TRUE)
 }
 \arguments{
 \item{eList}{named list with at least the Daily, Sample, and INFO dataframes}
+
+\item{showArrows}{logical whether or not to show arrows representing flow segments}
+
+\item{showRect}{logical whether or not to show rectangles representing sample segments}
 }
 \description{
 Flexible Flow Normalization Plot Add On

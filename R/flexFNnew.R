@@ -54,7 +54,7 @@ flexFN <- function(eList, dateInfo, sampleStart="sampleSegStart",
   }
   
   INFO <- eList$INFO
-  INFO$shortName <- paste0(INFO$shortName,"*")
+  
   INFO$nSegments <- nrow(dateInfo)
   
   attr(INFO,"segmentInfo") <- dateInfo
@@ -106,10 +106,10 @@ estFNsegs <- function(eList, dateInfo){
   
   # Calculate "flow-normalized" concentration and flux:
   sampleIndex <- localDaily$WaterYear >= dateInfo$sampleSegStart & localDaily$WaterYear <= dateInfo$sampleSegEnd
-  
+  flowIndex <- localDaily$WaterYear >= dateInfo$flowSegStart & localDaily$WaterYear <= dateInfo$flowSegEnd
+ 
   # First, bin the LogQ values by day-of-year.
-  allLogQsByDayOfYear <- split(localDaily$LogQ[sampleIndex], localDaily$Day[sampleIndex])
-  
+  allLogQsByDayOfYear <- split(localDaily$LogQ[flowIndex], localDaily$Day[flowIndex])
   
   allLogQsByDayOfYear[['59']] <- c(unlist(allLogQsByDayOfYear['59']),   # Bob's convention
                                    unlist(allLogQsByDayOfYear['60']))
@@ -118,28 +118,21 @@ estFNsegs <- function(eList, dateInfo){
   # Using the above data structure as a "look-up" table, list all LogQ values that occured on every
   # day of the entire daily record. When "unlisted" into a vector, these will become the "x" values 
   # for the interpolation.
-  
-  
-  allLogQsReplicated <- allLogQsByDayOfYear[localDaily$Day[sampleIndex]]
+  allLogQsReplicated <- allLogQsByDayOfYear[localDaily$Day]
   
   # Replicate the decimal year field for each day of the record to correspond to all the LogQ 
   # values listed for that day. These are the "y" values for the interpolation.
-  allDatesReplicated <- rep(localDaily$DecYear[sampleIndex], lapply(allLogQsReplicated, length))
-  
-  flowIndex <- (Year-.25) >= dateInfo$flowSegStart & (Year+0.25) <= dateInfo$flowSegEnd
-  
+  allDatesReplicated <- rep(localDaily$DecYear, lapply(allLogQsReplicated, length))
+   
   # Interpolate.
   allConcReplicated <- interp.surface( obj=list(x=LogQ,y=Year,z=localsurfaces[,,3]), 
-                                       loc=data.frame(	unlist(x=allLogQsReplicated),
+                                       loc=data.frame(unlist(x=allLogQsReplicated),
                                                        y=allDatesReplicated))
   allFluxReplicated <- allConcReplicated * exp(unlist(allLogQsReplicated)) * 86.4
   
-  allLogQsReplicatedSample <- allLogQsByDayOfYear[localDaily$Day[sampleIndex]]
-  allDatesReplicatedSample <- rep(localDaily$DecYear[sampleIndex], lapply(allLogQsReplicatedSample, length))
-  
   # Finally bin the collective results by days (the decimal year), and calculate the desired means.
-  localDaily$FNConc[sampleIndex] <-  as.numeric(tapply(allConcReplicated, allDatesReplicatedSample, "mean"))
-  localDaily$FNFlux[sampleIndex] <-  as.numeric(tapply(allFluxReplicated, allDatesReplicatedSample, "mean"))
+  localDaily$FNConc[sampleIndex] <-  as.numeric(tapply(allConcReplicated, allDatesReplicated, "mean"))[sampleIndex]
+  localDaily$FNFlux[sampleIndex] <-  as.numeric(tapply(allFluxReplicated, allDatesReplicated, "mean"))[sampleIndex]
 
   return(localDaily)
 

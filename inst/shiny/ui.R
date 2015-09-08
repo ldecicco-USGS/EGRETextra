@@ -97,6 +97,7 @@ shinyUI(
                              uiOutput("from"),
                              uiOutput("to"),
                              uiOutput("by"),
+                             uiOutput("rResid"),
                              uiOutput("animate"),
                              h4("R Code:"),
                              htmlOutput("modelCode")),

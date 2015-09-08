@@ -22,9 +22,9 @@ shinyServer(function(input, output) {
     if(!is.null(input$data)){
       path <- input$data$datapath
       fileName <- input$data$name
-      
-      extension <- strsplit(fileName, "\\.")[[1]][2]
-      fileName <- strsplit(fileName, "\\.")[[1]][1]
+      splitNames <- strsplit(fileName, "\\.")[[1]]
+      extension <- splitNames[length(splitNames)]
+      fileName <- paste0(splitNames[-length(splitNames)],collapse = ".")
       
       if(extension == "rds"){
         eList_Start <- readRDS(input$data$datapath)

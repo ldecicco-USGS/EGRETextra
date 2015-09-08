@@ -244,23 +244,28 @@ shinyServer(function(input, output) {
     } else {
       by = as.integer(input$by)
     }
-
+    
+    if(is.null(input$rResid)){
+      rResid <- FALSE
+    } else {
+      rResid <- input$rResid
+    }
     switch(input$modelPlots,
            "plotConcTimeDaily" = plotConcTimeDaily(eList),
            "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
-           "plotConcPred" = plotConcPred(eList, logScale = logScale),
-           "plotFluxPred" = plotFluxPred(eList, fluxUnit=fluxUnit),
-           "plotResidPred" = plotResidPred(eList),
-           "plotResidQ" = plotResidQ(eList, qUnit=qUnit),
-           "plotResidTime" = plotResidTime(eList),
-           "boxResidMonth" = boxResidMonth(eList),
-           "boxConcThree" = boxConcThree(eList),
+           "plotConcPred" = plotConcPred(eList, logScale = logScale, rResid=rResid),
+           "plotFluxPred" = plotFluxPred(eList, fluxUnit=fluxUnit, rResid=rResid),
+           "plotResidPred" = plotResidPred(eList, rResid=rResid),
+           "plotResidQ" = plotResidQ(eList, qUnit=qUnit, rResid=rResid),
+           "plotResidTime" = plotResidTime(eList, rResid=rResid),
+           "boxResidMonth" = boxResidMonth(eList, rResid=rResid),
+           "boxConcThree" = boxConcThree(eList, rResid=rResid),
            "plotConcHist" = plotConcHist(eList),
            "plotFluxHist" = plotFluxHist(eList, fluxUnit=fluxUnit),
            "plotConcQSmooth" = plotConcQSmooth(eList, date1=date1,date2=date2, date3=date3,qLow=qLow,qHigh=qHigh),
            "plotConcTimeSmooth" = plotConcTimeSmooth(eList, q1=qLow, q2=qMid, q3=qHigh, logScale = logScale,
                                                      centerDate=centerDate,yearStart=yearStart, yearEnd=yearEnd),
-           "fluxBiasMulti" = fluxBiasMulti(eList, fluxUnit=fluxUnit, qUnit=qUnit),
+           "fluxBiasMulti" = fluxBiasMulti(eList, fluxUnit=fluxUnit, qUnit=qUnit, rResid=rResid),
            "plotContours" = plotContours(eList, qUnit=qUnit,yearStart = yearStart, yearEnd = yearEnd,
                                          qBottom = qLow, qTop=qHigh,contourLevels = seq(from, to, length.out =by)),
            "plotDiffContours" = plotDiffContours(eList, year0=yearStart,year1 = yearEnd, maxDiff = maxDiff,
@@ -272,19 +277,19 @@ shinyServer(function(input, output) {
     switch(input$modelPlots,
            "plotConcTimeDaily" = plotConcTimeDaily(eList),
            "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
-           "plotConcPred" = plotConcPred(eList, logScale = logScale),
-           "plotFluxPred" = plotFluxPred(eList, fluxUnit=fluxUnit),
-           "plotResidPred" = plotResidPred(eList),
-           "plotResidQ" = plotResidQ(eList, qUnit=qUnit),
-           "plotResidTime" = plotResidTime(eList),
-           "boxResidMonth" = boxResidMonth(eList),
-           "boxConcThree" = boxConcThree(eList),
+           "plotConcPred" = plotConcPred(eList, logScale = logScale, rResid=rResid),
+           "plotFluxPred" = plotFluxPred(eList, fluxUnit=fluxUnit, rResid=rResid),
+           "plotResidPred" = plotResidPred(eList, rResid=rResid),
+           "plotResidQ" = plotResidQ(eList, qUnit=qUnit, rResid=rResid),
+           "plotResidTime" = plotResidTime(eList, rResid=rResid),
+           "boxResidMonth" = boxResidMonth(eList, rResid=rResid),
+           "boxConcThree" = boxConcThree(eList, rResid=rResid),
            "plotConcHist" = plotConcHist(eList),
            "plotFluxHist" = plotFluxHist(eList, fluxUnit=fluxUnit),
            "plotConcQSmooth" = plotConcQSmooth(eList, date1=date1,date2=date2, date3=date3,qLow=qLow,qHigh=qHigh),
            "plotConcTimeSmooth" = plotConcTimeSmooth(eList, q1=qLow, q2=qMid, q3=qHigh, logScale = logScale,
                                                      centerDate=centerDate,yearStart=yearStart, yearEnd=yearEnd),
-           "fluxBiasMulti" = fluxBiasMulti(eList, fluxUnit=fluxUnit, qUnit=qUnit),
+           "fluxBiasMulti" = fluxBiasMulti(eList, fluxUnit=fluxUnit, qUnit=qUnit, rResid=rResid),
            "plotContours" = plotContours(eList, qUnit=qUnit,yearStart = yearStart, yearEnd = yearEnd,
                                          qBottom = qLow, qTop=qHigh,contourLevels = seq(from, to, length.out =by)),
            "plotDiffContours" = plotDiffContours(eList, year0=yearStart,year1 = yearEnd, maxDiff = maxDiff,
@@ -329,11 +334,17 @@ shinyServer(function(input, output) {
     }
   })
   
+  output$rResid <- renderUI({
+    if(input$modelPlots %in% c("fluxBiasMulti", "plotResidPred","plotResidQ",
+                               "plotResidTime","boxResidMonth","plotConcPred",
+                               "plotFluxPred")){
+      checkboxInput("rResid", label = h5("Randomized Censored Values:"))
+    }
+  })
+  
   output$dataLog <- renderUI({
     if(input$dataPlots %in% c("boxConcMonth", "plotConcTime", "plotConcQ")){
-      radioButtons("logScaleData", label = h4("Scale"),
-                   choices = list("Linear" = 0, "Log" = 1), 
-                   selected = 0)
+      radioButtons("logScaleData", label = h4("Scale"))
     }
   })
   
@@ -655,16 +666,28 @@ shinyServer(function(input, output) {
       by = as.integer(input$by)
     }
     
+    if(is.null(input$rResid)){
+      rResid <- FALSE
+    } else {
+      rResid <- input$rResid
+    }
+    
+    if(is.null(input$logScaleModel)){
+      logScale = FALSE
+    } else {
+      logScale = as.logical(as.integer(input$logScaleModel))
+    }
+    
     outText <- switch(input$modelPlots,
            "plotConcTimeDaily" = paste0("plotConcTimeDaily(eList)"),
            "plotFluxTimeDaily" = paste0("plotFluxTimeDaily(eList, fluxUnit = ", fluxUnit),
-           "plotConcPred" = paste0("plotConcPred(eList)"),
+           "plotConcPred" = paste0("plotConcPred(eList, logScale = ",logScale,", rResid = ",rResid,")"),
            "plotFluxPred" = paste0("plotFluxPred(eList, fluxUnit = ", fluxUnit, ")"),
-           "plotResidPred" = paste0("plotResidPred(eList)"),
-           "plotResidQ" = paste0("plotResidQ(eList, qUnit = ", qUnit, ")"),
-           "plotResidTime" = paste0("plotResidTime(eList)"),
-           "boxResidMonth" = paste0("boxResidMonth(eList)"),
-           "boxConcThree" = paste0("boxConcThree(eList)"),
+           "plotResidPred" = paste0("plotResidPred(eList", rResid = ",rResid)"),
+           "plotResidQ" = paste0("plotResidQ(eList, qUnit = ", qUnit, rResid = ",rResid)"),
+           "plotResidTime" = paste0("plotResidTime(eList", rResid = ",rResid)"),
+           "boxResidMonth" = paste0("boxResidMonth(eList", rResid = ",rResid)"),
+           "boxConcThree" = paste0("boxConcThree(eList", rResid = ",rResid)"),
            "plotConcHist" = paste0("plotConcHist(eList)"),
            "plotFluxHist" = paste0("plotFluxHist(eList, fluxUnit = ", fluxUnit, ")"),
            "plotConcQSmooth" = paste0("plotConcQSmooth(eList, date1 = '",date1, "', date2 = '",
@@ -672,7 +695,7 @@ shinyServer(function(input, output) {
            "plotConcTimeSmooth" = paste0("plotConcTimeSmooth(eList, q1 = ",qLow,
                                          ", q2 = ",qMid, ", q3 = ",qHigh, ", yearStart = ",
                                          yearStart,", yearEnd = ",yearEnd,", centerDate = ",centerDate,")"),
-           "fluxBiasMulti" = paste0("fluxBiasMulti(eList, qUnit = ", qUnit,", fluxUnit = ", fluxUnit, ")"),
+           "fluxBiasMulti" = paste0("fluxBiasMulti(eList, qUnit = ", qUnit,", fluxUnit = ", fluxUnit, ", rResid = ",rResid, ")"),
            "plotContours" = paste0("plotContours(eList, qUnit=", qUnit,", yearStart = ",yearStart,
                                    ", yearEnd = ",yearEnd,", qBottom = ",qLow,", qTop = ",qHigh,
                                    ", contourLevels = seq(",from,", ",to,", length.out=",by, "))"),

@@ -74,7 +74,7 @@ shinyServer(function(input, output) {
     if(is.null(input$logScaleFlow)){
       logScale = FALSE
     } else {
-      logScale = as.logical(as.integer(input$logScaleFlow))
+      logScale = input$logScaleFlow
     }
     
     switch(input$flowPlots,
@@ -116,25 +116,31 @@ shinyServer(function(input, output) {
     if(is.null(input$logScaleData)){
       logScale = FALSE
     } else {
-      logScale = as.logical(as.integer(input$logScaleData))
+      logScale = input$logScaleData
+    }
+    
+    if(is.null(input$rResidData)){
+      rResid <- FALSE
+    } else {
+      rResid <- input$rResidData
     }
     
     switch(input$dataPlots,
-           "boxConcMonth" = boxConcMonth(eList, logScale = logScale),
+           "boxConcMonth" = boxConcMonth(eList, logScale = logScale, rResid = rResid),
            "boxQTwice" = boxQTwice(eList, qUnit = qUnit),
-           "plotConcTime" = plotConcTime(eList, logScale = logScale),
-           "plotConcQ" = plotConcQ(eList, qUnit = qUnit, logScale = logScale),
-           "multiPlotDataOverview" = multiPlotDataOverview(eList, qUnit = qUnit)
+           "plotConcTime" = plotConcTime(eList, logScale = logScale, rResid = rResid),
+           "plotConcQ" = plotConcQ(eList, qUnit = qUnit, logScale = logScale, rResid = rResid),
+           "multiPlotDataOverview" = multiPlotDataOverview(eList, qUnit = qUnit, rResid = rResid)
            
     )
     
     pdf("plot.pdf")
     switch(input$dataPlots,
-           "boxConcMonth" = boxConcMonth(eList, logScale = logScale),
+           "boxConcMonth" = boxConcMonth(eList, logScale = logScale, rResid = rResid),
            "boxQTwice" = boxQTwice(eList, qUnit = qUnit),
-           "plotConcTime" = plotConcTime(eList, logScale = logScale),
-           "plotConcQ" = plotConcQ(eList, qUnit = qUnit, logScale = logScale),
-           "multiPlotDataOverview" = multiPlotDataOverview(eList, qUnit = qUnit)
+           "plotConcTime" = plotConcTime(eList, logScale = logScale, rResid = rResid),
+           "plotConcQ" = plotConcQ(eList, qUnit = qUnit, logScale = logScale, rResid = rResid),
+           "multiPlotDataOverview" = multiPlotDataOverview(eList, qUnit = qUnit, rResid = rResid)
            
     )
     dev.off()
@@ -192,7 +198,7 @@ shinyServer(function(input, output) {
     if(is.null(input$logScaleModel)){
       logScale = FALSE
     } else {
-      logScale = as.logical(as.integer(input$logScaleModel))
+      logScale = input$logScaleModel
     }
     
     if(is.null(input$fluxUnit)){
@@ -251,7 +257,7 @@ shinyServer(function(input, output) {
       rResid <- input$rResid
     }
     switch(input$modelPlots,
-           "plotConcTimeDaily" = plotConcTimeDaily(eList),
+           "plotConcTimeDaily" = plotConcTimeDaily(eList, rResid=rResid),
            "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
            "plotConcPred" = plotConcPred(eList, logScale = logScale, rResid=rResid),
            "plotFluxPred" = plotFluxPred(eList, fluxUnit=fluxUnit, rResid=rResid),
@@ -262,7 +268,8 @@ shinyServer(function(input, output) {
            "boxConcThree" = boxConcThree(eList, rResid=rResid),
            "plotConcHist" = plotConcHist(eList),
            "plotFluxHist" = plotFluxHist(eList, fluxUnit=fluxUnit),
-           "plotConcQSmooth" = plotConcQSmooth(eList, date1=date1,date2=date2, date3=date3,qLow=qLow,qHigh=qHigh),
+           "plotConcQSmooth" = plotConcQSmooth(eList, date1=date1,date2=date2, date3=date3,
+                                               qLow=qLow,qHigh=qHigh, logScale = logScale),
            "plotConcTimeSmooth" = plotConcTimeSmooth(eList, q1=qLow, q2=qMid, q3=qHigh, logScale = logScale,
                                                      centerDate=centerDate,yearStart=yearStart, yearEnd=yearEnd),
            "fluxBiasMulti" = fluxBiasMulti(eList, fluxUnit=fluxUnit, qUnit=qUnit, rResid=rResid),
@@ -275,7 +282,7 @@ shinyServer(function(input, output) {
     
     pdf("plot.pdf")
     switch(input$modelPlots,
-           "plotConcTimeDaily" = plotConcTimeDaily(eList),
+           "plotConcTimeDaily" = plotConcTimeDaily(eList, rResid=rResid),
            "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
            "plotConcPred" = plotConcPred(eList, logScale = logScale, rResid=rResid),
            "plotFluxPred" = plotFluxPred(eList, fluxUnit=fluxUnit, rResid=rResid),
@@ -286,7 +293,8 @@ shinyServer(function(input, output) {
            "boxConcThree" = boxConcThree(eList, rResid=rResid),
            "plotConcHist" = plotConcHist(eList),
            "plotFluxHist" = plotFluxHist(eList, fluxUnit=fluxUnit),
-           "plotConcQSmooth" = plotConcQSmooth(eList, date1=date1,date2=date2, date3=date3,qLow=qLow,qHigh=qHigh),
+           "plotConcQSmooth" = plotConcQSmooth(eList, date1=date1,date2=date2, date3=date3,
+                                               qLow=qLow,qHigh=qHigh, logScale = logScale),
            "plotConcTimeSmooth" = plotConcTimeSmooth(eList, q1=qLow, q2=qMid, q3=qHigh, logScale = logScale,
                                                      centerDate=centerDate,yearStart=yearStart, yearEnd=yearEnd),
            "fluxBiasMulti" = fluxBiasMulti(eList, fluxUnit=fluxUnit, qUnit=qUnit, rResid=rResid),
@@ -328,23 +336,27 @@ shinyServer(function(input, output) {
   
   output$flowLog <- renderUI({
     if(input$flowPlots == "plotQTimeDaily"){
-      radioButtons("logScaleFlow", label = h4("Scale"),
-                   choices = list("Linear" = 0, "Log" = 1), 
-                   selected = 0)
+      checkboxInput("logScaleFlow", label = h5("Log Scale"))
     }
   })
   
   output$rResid <- renderUI({
     if(input$modelPlots %in% c("fluxBiasMulti", "plotResidPred","plotResidQ",
                                "plotResidTime","boxResidMonth","plotConcPred",
-                               "plotFluxPred")){
+                               "plotFluxPred","plotConcTimeDaily")){
       checkboxInput("rResid", label = h5("Randomized Censored Values:"))
+    }
+  })
+  
+  output$rResidData <- renderUI({
+    if(input$dataPlots %in% c("plotConcQ","plotConcTime","multiPlotDataOverview")){
+      checkboxInput("rResidData", label = h5("Randomized Censored Values:"))
     }
   })
   
   output$dataLog <- renderUI({
     if(input$dataPlots %in% c("boxConcMonth", "plotConcTime", "plotConcQ")){
-      radioButtons("logScaleData", label = h4("Scale"))
+      checkboxInput("logScaleData", label = h5("Log Scale"))
     }
   })
   
@@ -456,9 +468,7 @@ shinyServer(function(input, output) {
   
   output$modelLog <- renderUI({
     if(input$modelPlots %in% c("plotConcPred","plotConcQSmooth","plotConcTimeSmooth")){
-      radioButtons("logScaleModel", label = h4("Scale"),
-                   choices = list("Linear" = 0, "Log" = 1), 
-                   selected = 0)
+      checkboxInput("logScaleModel", label = h5("Log Scale"))
     }
   })
   
@@ -501,7 +511,7 @@ shinyServer(function(input, output) {
     if(is.null(input$logScaleFlow)){
       logScale = FALSE
     } else {
-      logScale = as.logical(as.integer(input$logScaleFlow))
+      logScale = input$logScaleFlow
     }
     
     outText <- switch(input$flowPlots,
@@ -541,15 +551,24 @@ shinyServer(function(input, output) {
     if(is.null(input$logScaleData)){
       logScale = FALSE
     } else {
-      logScale = as.logical(as.integer(input$logScaleData))
+      logScale = input$logScaleData
+    }
+    
+    if(is.null(input$rResidData)){
+      rResid <- FALSE
+    } else {
+      rResid <- input$rResidData
     }
     
     outText <- switch(input$dataPlots,
            "boxConcMonth" = paste0("boxConcMonth(eList, logScale = ", logScale,")"),
            "boxQTwice" = paste0("boxQTwice(eList, qUnit = ", qUnit, ")"),
-           "plotConcTime" = paste0("plotConcTime(eList, logScale = ", logScale,")"),
-           "plotConcQ" = paste0("plotConcQ(eList, logScale = ", logScale,", qUnit = ", qUnit, ")"),
-           "multiPlotDataOverview" = paste0("multiPlotDataOverview(eList, qUnit = ", qUnit, ")")
+           "plotConcTime" = paste0("plotConcTime(eList, logScale = ", logScale,
+                                   ", rResid = ", rResid,")"),
+           "plotConcQ" = paste0("plotConcQ(eList, logScale = ", logScale,", qUnit = ", qUnit,
+                                ", rResid = ", rResid,")"),
+           "multiPlotDataOverview" = paste0("multiPlotDataOverview(eList, qUnit = ", qUnit,
+                                            ", rResid = ", rResid,")")
            
     )
     
@@ -675,11 +694,11 @@ shinyServer(function(input, output) {
     if(is.null(input$logScaleModel)){
       logScale = FALSE
     } else {
-      logScale = as.logical(as.integer(input$logScaleModel))
+      logScale = input$logScaleModel
     }
     
     outText <- switch(input$modelPlots,
-           "plotConcTimeDaily" = paste0("plotConcTimeDaily(eList)"),
+           "plotConcTimeDaily" = paste0("plotConcTimeDaily(eList",", rResid = ",rResid,")"),
            "plotFluxTimeDaily" = paste0("plotFluxTimeDaily(eList, fluxUnit = ", fluxUnit),
            "plotConcPred" = paste0("plotConcPred(eList, logScale = ",logScale,", rResid = ",rResid,")"),
            "plotFluxPred" = paste0("plotFluxPred(eList, fluxUnit = ", fluxUnit, ")"),
@@ -691,10 +710,12 @@ shinyServer(function(input, output) {
            "plotConcHist" = paste0("plotConcHist(eList)"),
            "plotFluxHist" = paste0("plotFluxHist(eList, fluxUnit = ", fluxUnit, ")"),
            "plotConcQSmooth" = paste0("plotConcQSmooth(eList, date1 = '",date1, "', date2 = '",
-                                      date2,"', date3 = '",date3, "', qLow = ",qLow,", qHigh = ",qHigh,")"),
+                                      date2,"', date3 = '",date3, "', qLow = ",qLow,", qHigh = ",qHigh,
+                                      ", logScale = ", logScale,")"),
            "plotConcTimeSmooth" = paste0("plotConcTimeSmooth(eList, q1 = ",qLow,
                                          ", q2 = ",qMid, ", q3 = ",qHigh, ", yearStart = ",
-                                         yearStart,", yearEnd = ",yearEnd,", centerDate = ",centerDate,")"),
+                                         yearStart,", yearEnd = ",yearEnd,", centerDate = ",centerDate,
+                                         ", logScale = ",logScale,")"),
            "fluxBiasMulti" = paste0("fluxBiasMulti(eList, qUnit = ", qUnit,", fluxUnit = ", fluxUnit, ", rResid = ",rResid, ")"),
            "plotContours" = paste0("plotContours(eList, qUnit=", qUnit,", yearStart = ",yearStart,
                                    ", yearEnd = ",yearEnd,", qBottom = ",qLow,", qTop = ",qHigh,

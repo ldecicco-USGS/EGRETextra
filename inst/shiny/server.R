@@ -523,8 +523,8 @@ shinyServer(function(input, output) {
            
     )
     
-    HTML(paste0("<h5>setPA(eList, paStart = ",paStart, ", paLong = ", paLong,")</h5>",
-                "<h5>",outText,"</h5>"))
+    HTML(paste0("setPA(eList, paStart = ",paStart, ", paLong = ", paLong,")\n",
+                "",outText))
     
   })
   
@@ -572,8 +572,8 @@ shinyServer(function(input, output) {
            
     )
     
-    HTML(paste0("<h5>setPA(eList, paStart = ",paStart, ", paLong = ", paLong,")</h5>",
-                "<h5>",outText,"</h5>"))
+    HTML(paste0("setPA(eList, paStart = ",paStart, ", paLong = ", paLong,")\n",
+                outText))
     
   })
   
@@ -724,8 +724,8 @@ shinyServer(function(input, output) {
                                        yearEnd,", qBottom = ",qLow,", qTop = ",qHigh, ", maxDiff = ",maxDiff,")")
     )
     
-    HTML(paste0("<h5>setPA(eList, paStart = ",paStart, ", paLong = ", paLong,")</h5>",
-                "<h5>",outText,"</h5>"))
+    HTML(paste0("setPA(eList, paStart = ",paStart, ", paLong = ", paLong,")\n",
+                outText))
     
   })
   

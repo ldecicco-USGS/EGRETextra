@@ -118,29 +118,23 @@ shinyServer(function(input, output) {
     } else {
       logScale = input$logScaleData
     }
-    
-    if(is.null(input$rResidData)){
-      rResid <- FALSE
-    } else {
-      rResid <- input$rResidData
-    }
-    
+
     switch(input$dataPlots,
-           "boxConcMonth" = boxConcMonth(eList, logScale = logScale, rResid = rResid),
+           "boxConcMonth" = boxConcMonth(eList, logScale = logScale),
            "boxQTwice" = boxQTwice(eList, qUnit = qUnit),
-           "plotConcTime" = plotConcTime(eList, logScale = logScale, rResid = rResid),
-           "plotConcQ" = plotConcQ(eList, qUnit = qUnit, logScale = logScale, rResid = rResid),
-           "multiPlotDataOverview" = multiPlotDataOverview(eList, qUnit = qUnit, rResid = rResid)
+           "plotConcTime" = plotConcTime(eList, logScale = logScale),
+           "plotConcQ" = plotConcQ(eList, qUnit = qUnit, logScale = logScale),
+           "multiPlotDataOverview" = multiPlotDataOverview(eList, qUnit = qUnit)
            
     )
     
     pdf("plot.pdf")
     switch(input$dataPlots,
-           "boxConcMonth" = boxConcMonth(eList, logScale = logScale, rResid = rResid),
+           "boxConcMonth" = boxConcMonth(eList, logScale = logScale),
            "boxQTwice" = boxQTwice(eList, qUnit = qUnit),
-           "plotConcTime" = plotConcTime(eList, logScale = logScale, rResid = rResid),
-           "plotConcQ" = plotConcQ(eList, qUnit = qUnit, logScale = logScale, rResid = rResid),
-           "multiPlotDataOverview" = multiPlotDataOverview(eList, qUnit = qUnit, rResid = rResid)
+           "plotConcTime" = plotConcTime(eList, logScale = logScale),
+           "plotConcQ" = plotConcQ(eList, qUnit = qUnit, logScale = logScale),
+           "multiPlotDataOverview" = multiPlotDataOverview(eList, qUnit = qUnit)
            
     )
     dev.off()
@@ -257,15 +251,15 @@ shinyServer(function(input, output) {
       rResid <- input$rResid
     }
     switch(input$modelPlots,
-           "plotConcTimeDaily" = plotConcTimeDaily(eList, rResid=rResid),
+           "plotConcTimeDaily" = plotConcTimeDaily(eList),
            "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
-           "plotConcPred" = plotConcPred(eList, logScale = logScale, rResid=rResid),
-           "plotFluxPred" = plotFluxPred(eList, fluxUnit=fluxUnit, rResid=rResid),
+           "plotConcPred" = plotConcPred(eList, logScale = logScale),
+           "plotFluxPred" = plotFluxPred(eList, fluxUnit=fluxUnit),
            "plotResidPred" = plotResidPred(eList, rResid=rResid),
            "plotResidQ" = plotResidQ(eList, qUnit=qUnit, rResid=rResid),
            "plotResidTime" = plotResidTime(eList, rResid=rResid),
            "boxResidMonth" = boxResidMonth(eList, rResid=rResid),
-           "boxConcThree" = boxConcThree(eList, rResid=rResid),
+           "boxConcThree" = boxConcThree(eList),
            "plotConcHist" = plotConcHist(eList),
            "plotFluxHist" = plotFluxHist(eList, fluxUnit=fluxUnit),
            "plotConcQSmooth" = plotConcQSmooth(eList, date1=date1,date2=date2, date3=date3,
@@ -282,15 +276,15 @@ shinyServer(function(input, output) {
     
     pdf("plot.pdf")
     switch(input$modelPlots,
-           "plotConcTimeDaily" = plotConcTimeDaily(eList, rResid=rResid),
+           "plotConcTimeDaily" = plotConcTimeDaily(eList),
            "plotFluxTimeDaily" = plotFluxTimeDaily(eList, fluxUnit=fluxUnit),
-           "plotConcPred" = plotConcPred(eList, logScale = logScale, rResid=rResid),
-           "plotFluxPred" = plotFluxPred(eList, fluxUnit=fluxUnit, rResid=rResid),
+           "plotConcPred" = plotConcPred(eList, logScale = logScale),
+           "plotFluxPred" = plotFluxPred(eList, fluxUnit=fluxUnit),
            "plotResidPred" = plotResidPred(eList, rResid=rResid),
            "plotResidQ" = plotResidQ(eList, qUnit=qUnit, rResid=rResid),
            "plotResidTime" = plotResidTime(eList, rResid=rResid),
            "boxResidMonth" = boxResidMonth(eList, rResid=rResid),
-           "boxConcThree" = boxConcThree(eList, rResid=rResid),
+           "boxConcThree" = boxConcThree(eList),
            "plotConcHist" = plotConcHist(eList),
            "plotFluxHist" = plotFluxHist(eList, fluxUnit=fluxUnit),
            "plotConcQSmooth" = plotConcQSmooth(eList, date1=date1,date2=date2, date3=date3,
@@ -342,15 +336,8 @@ shinyServer(function(input, output) {
   
   output$rResid <- renderUI({
     if(input$modelPlots %in% c("fluxBiasMulti", "plotResidPred","plotResidQ",
-                               "plotResidTime","boxResidMonth","plotConcPred",
-                               "plotFluxPred","plotConcTimeDaily")){
+                               "plotResidTime","boxResidMonth")){
       checkboxInput("rResid", label = h5("Randomized Censored Values:"))
-    }
-  })
-  
-  output$rResidData <- renderUI({
-    if(input$dataPlots %in% c("plotConcQ","plotConcTime","multiPlotDataOverview")){
-      checkboxInput("rResidData", label = h5("Randomized Censored Values:"))
     }
   })
   
@@ -376,12 +363,6 @@ shinyServer(function(input, output) {
     }
   })
   
-#   output$animate <- renderUI({
-#     if(input$modelPlots %in% c("plotDiffContours")){
-#       checkboxInput("animate", "Animate", value = FALSE)
-#     }
-#   })
-#   
   output$by <- renderUI({
     if(input$modelPlots %in% c("plotContours")){
       numericInput("by", label = h5("Number of divisions"), value = 5)
@@ -553,28 +534,53 @@ shinyServer(function(input, output) {
     } else {
       logScale = input$logScaleData
     }
-    
-    if(is.null(input$rResidData)){
-      rResid <- FALSE
-    } else {
-      rResid <- input$rResidData
-    }
+
     
     outText <- switch(input$dataPlots,
            "boxConcMonth" = paste0("boxConcMonth(eList, logScale = ", logScale,")"),
            "boxQTwice" = paste0("boxQTwice(eList, qUnit = ", qUnit, ")"),
-           "plotConcTime" = paste0("plotConcTime(eList, logScale = ", logScale,
-                                   ", rResid = ", rResid,")"),
-           "plotConcQ" = paste0("plotConcQ(eList, logScale = ", logScale,", qUnit = ", qUnit,
-                                ", rResid = ", rResid,")"),
+           "plotConcTime" = paste0("plotConcTime(eList, logScale = ", logScale,")"),
+           "plotConcQ" = paste0("plotConcQ(eList, logScale = ", logScale,", qUnit = ", qUnit,")"),
            "multiPlotDataOverview" = paste0("multiPlotDataOverview(eList, qUnit = ", qUnit,
-                                            ", rResid = ", rResid,")")
+                                            ")")
            
     )
     
     HTML(paste0("setPA(eList, paStart = ",paStart, ", paLong = ", paLong,")\n",
                 outText))
     
+  })
+  
+  output$loadCode <- renderPrint({
+    HTML('# One example workflow for loading data. 
+          # Many other options described in EGRET User guide
+          # Use this workflow to produce an .rds file to 
+          # load in this application
+         library(EGRET)
+         
+         siteID <- "01491000" #Choptank River at Greensboro, MD
+         startDate <- "" #Gets earliest date
+         endDate <- "2011-09-30"
+         parameter_cd <-"00631" #5 digit USGS code
+         Sample <- readNWISSample(siteID,parameter_cd,startDate,endDate)  
+         startDate <- min(as.character(Sample$Date)) 
+         Daily <- readNWISDaily(siteID,"00060",startDate,endDate)
+         INFO<- readNWISInfo(siteID,parameter_cd)
+         INFO$shortName <- "Choptank River at Greensboro, MD"
+         
+         # Merge discharge with sample data:
+         eList <- mergeReport(INFO, Daily, Sample)
+         
+         ############################
+         # Run WRTDS model:
+         eList <- modelEstimation(eList)
+         ############################
+         
+         saveRDS(eList, "chopList.rds")
+         # load later:
+         eList <- readRDS("chopList.rds")
+         
+         ')
   })
   
   output$modelCode <- renderPrint({
@@ -698,15 +704,15 @@ shinyServer(function(input, output) {
     }
     
     outText <- switch(input$modelPlots,
-           "plotConcTimeDaily" = paste0("plotConcTimeDaily(eList",", rResid = ",rResid,")"),
+           "plotConcTimeDaily" = paste0("plotConcTimeDaily(eList)"),
            "plotFluxTimeDaily" = paste0("plotFluxTimeDaily(eList, fluxUnit = ", fluxUnit),
-           "plotConcPred" = paste0("plotConcPred(eList, logScale = ",logScale,", rResid = ",rResid,")"),
+           "plotConcPred" = paste0("plotConcPred(eList, logScale = ",logScale,")"),
            "plotFluxPred" = paste0("plotFluxPred(eList, fluxUnit = ", fluxUnit, ")"),
            "plotResidPred" = paste0("plotResidPred(eList", rResid = ",rResid)"),
            "plotResidQ" = paste0("plotResidQ(eList, qUnit = ", qUnit, rResid = ",rResid)"),
            "plotResidTime" = paste0("plotResidTime(eList", rResid = ",rResid)"),
            "boxResidMonth" = paste0("boxResidMonth(eList", rResid = ",rResid)"),
-           "boxConcThree" = paste0("boxConcThree(eList", rResid = ",rResid)"),
+           "boxConcThree" = paste0("boxConcThree(eList)"),
            "plotConcHist" = paste0("plotConcHist(eList)"),
            "plotFluxHist" = paste0("plotFluxHist(eList, fluxUnit = ", fluxUnit, ")"),
            "plotConcQSmooth" = paste0("plotConcQSmooth(eList, date1 = '",date1, "', date2 = '",

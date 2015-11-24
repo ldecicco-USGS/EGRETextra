@@ -1,14 +1,22 @@
 shinyUI(
   fluidPage(
     h2("EGRET Exploration"),
+    h4("To learn more about the EGRET R package, and WRTDS (Weighted Regressions on Time, Discharge, and Season), see:"),
+    tags$div(class="header", checked=NA,
+             tags$a(href="http://pubs.usgs.gov/tm/04/a10/","EGRET User Guide")),
+    h5("Evaluating long-term changes in river conditions (water quality and discharge) is an important use of hydrologic data. 
+       To carry out such evaluations, the hydrologist needs tools to facilitate several key steps in the process: 
+       acquiring the data records from a variety of sources, structuring it in ways that facilitate the analysis, 
+       routines that will process the data to extract information about changes that may be happening, 
+       and graphical techniques that can display findings about change."),
     fluidRow(column(5, fileInput("data", "Load EGRET object")),
              column(5,              
                  wellPanel(
                    helpText(a("Get Shiny App Code", href="https://github.com/USGS-R/EGRETextra/tree/master/inst/shiny",target="_blank")
-                   ), style = "padding: 2px; width:150px"
+                   ), style = "padding: 2px; width:130px"
                  ))),
     fluidRow(
-      column(3, h3("Period of Analysis:")),
+      column(3, h5("Period of Analysis:", align ="right")),
       column(4,
              selectInput("paStart", label = "Starting Month", 
                          choices = c(month.name),
@@ -19,7 +27,7 @@ shinyUI(
                          selected = 12, multiple = FALSE))
       ),
     fluidRow(
-      column(3, h3("Units")),
+      column(3, h5("Units", align ="right")),
       column(4,
              selectInput("fluxUnit", label = "Flux Units", 
                          choices = list("pounds/day" = 1,
@@ -50,7 +58,15 @@ shinyUI(
     ),
     fluidRow(
       column(11,
-             tabsetPanel(
+             tabsetPanel( selected="Flow History",
+               tabPanel("Load Data",
+                        fluidRow(
+                          column(3),
+                          column(9,
+                                 h4("R Code:"),
+                                 verbatimTextOutput("loadCode"))
+                        )     
+               ),
                tabPanel("Flow History",
                         fluidRow(
                           column(3,
@@ -73,8 +89,7 @@ shinyUI(
                              selectInput("dataPlots", label = "Data", 
                                  choices = c("boxConcMonth","boxQTwice","plotConcTime","plotConcQ","multiPlotDataOverview"),
                                  selected = "multiPlotDataOverview", multiple = FALSE),
-                             uiOutput("dataLog"),
-                             uiOutput("rResidData")),
+                             uiOutput("dataLog")),
                         column(9,
                                h4("R Code:"),
                                verbatimTextOutput("dataCode"),

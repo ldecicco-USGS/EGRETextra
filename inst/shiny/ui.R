@@ -13,7 +13,7 @@ shinyUI(
              column(5,              
                  wellPanel(
                    helpText(a("Get Shiny App Code", href="https://github.com/USGS-R/EGRETextra/tree/master/inst/shiny",target="_blank")
-                   ), style = "padding: 2px; width:130px"
+                   ), style = "padding: 2px; width:140px"
                  ))),
     fluidRow(
       column(3, h5("Period of Analysis:", align ="right")),

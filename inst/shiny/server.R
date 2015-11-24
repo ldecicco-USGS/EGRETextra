@@ -553,33 +553,37 @@ shinyServer(function(input, output) {
   
   output$loadCode <- renderPrint({
     HTML('# One example workflow for loading data. 
-          # Many other options described in EGRET User guide
-          # Use this workflow to produce an .rds file to 
-          # load in this application
-         library(EGRET)
-         
-         siteID <- "01491000" #Choptank River at Greensboro, MD
-         startDate <- "" #Gets earliest date
-         endDate <- "2011-09-30"
-         parameter_cd <-"00631" #5 digit USGS code
-         Sample <- readNWISSample(siteID,parameter_cd,startDate,endDate)  
-         startDate <- min(as.character(Sample$Date)) 
-         Daily <- readNWISDaily(siteID,"00060",startDate,endDate)
-         INFO<- readNWISInfo(siteID,parameter_cd,interactive=FALSE)
-         INFO$shortName <- "Choptank River at Greensboro, MD"
-         
-         # Merge discharge with sample data:
-         eList <- mergeReport(INFO, Daily, Sample)
-         
-         ############################
-         # Run WRTDS model:
-         eList <- modelEstimation(eList)
-         ############################
-         
-         saveRDS(eList, "chopList.rds")
-         # load later:
-         eList <- readRDS("chopList.rds")
-         
+# Many other options described in EGRET User guide
+# Use this workflow to produce an .rds file to 
+# load in this application
+library(EGRET)
+
+siteID <- "01491000" #Choptank River at Greensboro, MD
+startDate <- "" #Gets earliest date
+endDate <- "2011-09-30"
+parameter_cd <-"00631" #5 digit USGS code
+Sample <- readNWISSample(siteID,parameter_cd,startDate,endDate)  
+startDate <- min(as.character(Sample$Date)) 
+Daily <- readNWISDaily(siteID,"00060",startDate,endDate)
+INFO<- readNWISInfo(siteID,parameter_cd,interactive=FALSE)
+INFO$shortName <- "Choptank River at Greensboro, MD"
+
+# Merge discharge with sample data:
+eList <- mergeReport(INFO, Daily, Sample)
+
+############################
+# Run WRTDS model:
+eList <- modelEstimation(eList)
+############################
+
+saveRDS(eList, "chopList.rds")
+
+# The file chopList.rds (or one like it) can be used
+# with the "Choose File" button above
+
+# load later:
+eList <- readRDS("chopList.rds")
+
          ')
   })
   

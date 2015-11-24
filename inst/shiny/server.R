@@ -565,7 +565,7 @@ shinyServer(function(input, output) {
          Sample <- readNWISSample(siteID,parameter_cd,startDate,endDate)  
          startDate <- min(as.character(Sample$Date)) 
          Daily <- readNWISDaily(siteID,"00060",startDate,endDate)
-         INFO<- readNWISInfo(siteID,parameter_cd)
+         INFO<- readNWISInfo(siteID,parameter_cd,interactive=FALSE)
          INFO$shortName <- "Choptank River at Greensboro, MD"
          
          # Merge discharge with sample data:
